@@ -1,0 +1,1110 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>로컬 개발 환경 아키텍처</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0a0a0f;
+        --surface: #12121a;
+        --surface2: #1a1a26;
+        --border: #2a2a3a;
+        --text: #e8e8f0;
+        --text-dim: #8888a0;
+        --accent-red: #ff4d6a;
+        --accent-orange: #ff8a3d;
+        --accent-yellow: #ffd23d;
+        --accent-green: #3dff8a;
+        --accent-cyan: #3dd8ff;
+        --accent-blue: #3d8aff;
+        --accent-purple: #8a3dff;
+        --glow-red: rgba(255, 77, 106, 0.12);
+        --glow-orange: rgba(255, 138, 61, 0.12);
+        --glow-yellow: rgba(255, 210, 61, 0.12);
+        --glow-green: rgba(61, 255, 138, 0.12);
+        --glow-cyan: rgba(61, 216, 255, 0.12);
+        --glow-blue: rgba(61, 138, 255, 0.12);
+        --glow-purple: rgba(138, 61, 255, 0.12);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Noto Sans KR', sans-serif;
+        line-height: 1.6;
+      }
+
+      .hero {
+        text-align: center;
+        padding: 50px 20px 30px;
+        position: relative;
+      }
+      .hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(138, 61, 255, 0.06) 0%, transparent 70%);
+        pointer-events: none;
+      }
+      .hero h1 {
+        font-size: 2.2rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 6px;
+      }
+      .hero .sub {
+        color: var(--text-dim);
+        font-size: 0.95rem;
+        font-weight: 300;
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 20px 60px;
+      }
+
+      /* ===== LAYER DIAGRAM ===== */
+      .diagram {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 28px 24px;
+        margin-top: 36px;
+        overflow-x: auto;
+      }
+      .diagram-rainbow {
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--accent-red),
+          var(--accent-orange),
+          var(--accent-yellow),
+          var(--accent-green),
+          var(--accent-cyan),
+          var(--accent-purple)
+        );
+        border-radius: 14px 14px 0 0;
+        margin: -28px -24px 24px -24px;
+      }
+      .diagram h2 {
+        font-size: 1.2rem;
+        text-align: center;
+        margin-bottom: 24px;
+        color: var(--text);
+      }
+
+      .layer-row {
+        display: flex;
+        align-items: stretch;
+        margin-bottom: 6px;
+        min-height: 56px;
+      }
+      .layer-label {
+        width: 130px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 8px 6px;
+        text-align: center;
+        line-height: 1.4;
+        margin-right: 6px;
+      }
+      .layer-label .num {
+        font-size: 0.6rem;
+        opacity: 0.7;
+        margin-bottom: 2px;
+      }
+      .layer-boxes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        flex: 1;
+      }
+      .layer-box {
+        flex: 1 1 100px;
+        min-width: 90px;
+        padding: 10px 8px;
+        border-radius: 8px;
+        border: 1px solid;
+        font-size: 0.78rem;
+        font-weight: 500;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        line-height: 1.4;
+      }
+      .layer-box small {
+        font-size: 0.62rem;
+        opacity: 0.7;
+        margin-top: 2px;
+      }
+      .arrow-row {
+        text-align: center;
+        color: var(--text-dim);
+        opacity: 0.3;
+        font-size: 0.9rem;
+        padding: 1px 0;
+      }
+
+      .c-red {
+        background: var(--glow-red);
+        border-color: rgba(255, 77, 106, 0.25) !important;
+        color: var(--accent-red);
+      }
+      .c-orange {
+        background: var(--glow-orange);
+        border-color: rgba(255, 138, 61, 0.25) !important;
+        color: var(--accent-orange);
+      }
+      .c-yellow {
+        background: var(--glow-yellow);
+        border-color: rgba(255, 210, 61, 0.25) !important;
+        color: var(--accent-yellow);
+      }
+      .c-green {
+        background: var(--glow-green);
+        border-color: rgba(61, 255, 138, 0.25) !important;
+        color: var(--accent-green);
+      }
+      .c-cyan {
+        background: var(--glow-cyan);
+        border-color: rgba(61, 216, 255, 0.25) !important;
+        color: var(--accent-cyan);
+      }
+      .c-purple {
+        background: var(--glow-purple);
+        border-color: rgba(138, 61, 255, 0.25) !important;
+        color: var(--accent-purple);
+      }
+
+      /* ===== PHASE ===== */
+      .phase {
+        margin-top: 44px;
+        margin-bottom: 20px;
+      }
+      .phase-head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 6px;
+      }
+      .phase-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 16px;
+        letter-spacing: 0.5px;
+      }
+      .phase-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+      }
+      .phase-desc {
+        color: var(--text-dim);
+        font-size: 0.88rem;
+        margin-left: 2px;
+      }
+
+      .p1 .phase-tag {
+        background: var(--glow-red);
+        color: var(--accent-red);
+      }
+      .p1 .phase-title {
+        color: var(--accent-red);
+      }
+      .p1 .card:hover {
+        border-color: rgba(255, 77, 106, 0.3);
+      }
+      .p1 .card-top {
+        background: linear-gradient(90deg, var(--accent-red), transparent);
+      }
+
+      .p2 .phase-tag {
+        background: var(--glow-orange);
+        color: var(--accent-orange);
+      }
+      .p2 .phase-title {
+        color: var(--accent-orange);
+      }
+      .p2 .card:hover {
+        border-color: rgba(255, 138, 61, 0.3);
+      }
+      .p2 .card-top {
+        background: linear-gradient(90deg, var(--accent-orange), transparent);
+      }
+
+      .p3 .phase-tag {
+        background: var(--glow-yellow);
+        color: var(--accent-yellow);
+      }
+      .p3 .phase-title {
+        color: var(--accent-yellow);
+      }
+      .p3 .card:hover {
+        border-color: rgba(255, 210, 61, 0.3);
+      }
+      .p3 .card-top {
+        background: linear-gradient(90deg, var(--accent-yellow), transparent);
+      }
+
+      .p4 .phase-tag {
+        background: var(--glow-green);
+        color: var(--accent-green);
+      }
+      .p4 .phase-title {
+        color: var(--accent-green);
+      }
+      .p4 .card:hover {
+        border-color: rgba(61, 255, 138, 0.3);
+      }
+      .p4 .card-top {
+        background: linear-gradient(90deg, var(--accent-green), transparent);
+      }
+
+      .p5 .phase-tag {
+        background: var(--glow-cyan);
+        color: var(--accent-cyan);
+      }
+      .p5 .phase-title {
+        color: var(--accent-cyan);
+      }
+      .p5 .card:hover {
+        border-color: rgba(61, 216, 255, 0.3);
+      }
+      .p5 .card-top {
+        background: linear-gradient(90deg, var(--accent-cyan), transparent);
+      }
+
+      .p6 .phase-tag {
+        background: var(--glow-purple);
+        color: var(--accent-purple);
+      }
+      .p6 .phase-title {
+        color: var(--accent-purple);
+      }
+      .p6 .card:hover {
+        border-color: rgba(138, 61, 255, 0.3);
+      }
+      .p6 .card-top {
+        background: linear-gradient(90deg, var(--accent-purple), transparent);
+      }
+
+      /* ===== CARDS ===== */
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 14px;
+        margin-top: 18px;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 22px;
+        position: relative;
+        overflow: hidden;
+        transition:
+          transform 0.2s,
+          border-color 0.3s;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+      }
+      .card-top {
+        height: 3px;
+        border-radius: 12px 12px 0 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+      .card-id {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem;
+        color: var(--text-dim);
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+      }
+      .card h3 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      .card h3 .ic {
+        margin-right: 6px;
+      }
+      .card p {
+        color: var(--text-dim);
+        font-size: 0.84rem;
+        line-height: 1.7;
+        margin-bottom: 12px;
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      .tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem;
+        padding: 2px 9px;
+        border-radius: 5px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+      }
+      .outs {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+      }
+      .outs-label {
+        font-size: 0.68rem;
+        font-family: 'JetBrains Mono', monospace;
+        color: var(--text-dim);
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+      .out-item {
+        font-size: 0.82rem;
+        padding: 2px 0 2px 18px;
+        position: relative;
+        color: var(--text);
+      }
+      .out-item::before {
+        content: '\2192';
+        position: absolute;
+        left: 0;
+        font-size: 0.72rem;
+        color: var(--text-dim);
+      }
+
+      /* ===== FOLDER TREE ===== */
+      .tree-wrap {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 22px 26px;
+        margin-top: 18px;
+        overflow-x: auto;
+      }
+      .tree-wrap pre {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        line-height: 1.9;
+        color: var(--text-dim);
+        white-space: pre;
+        margin: 0;
+      }
+      .tree-wrap .d {
+        color: var(--accent-cyan);
+        font-weight: 600;
+      }
+      .tree-wrap .f {
+        color: var(--text-dim);
+      }
+      .tree-wrap .c {
+        color: #555570;
+        font-style: italic;
+      }
+
+      /* ===== DEPS ===== */
+      .deps {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 22px;
+        margin-top: 18px;
+      }
+      .deps h3 {
+        font-size: 1rem;
+        margin-bottom: 14px;
+      }
+      .dep-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 10px;
+      }
+      .dep {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--surface2);
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+      .dep .di {
+        font-size: 1.2rem;
+      }
+      .dep .dn {
+        font-weight: 600;
+        font-size: 0.84rem;
+      }
+      .dep .dd {
+        font-size: 0.7rem;
+        color: var(--text-dim);
+      }
+
+      /* ===== TIMELINE ===== */
+      .timeline-wrap {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 22px;
+        margin-top: 28px;
+      }
+      .timeline-wrap h3 {
+        font-size: 1rem;
+        margin-bottom: 14px;
+      }
+      .tl {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0;
+      }
+      .tl-item {
+        padding: 14px 10px;
+        text-align: center;
+        border-right: 1px solid var(--border);
+      }
+      .tl-item:last-child {
+        border-right: none;
+      }
+      .tl-week {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.6rem;
+        color: var(--text-dim);
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+      }
+      .tl-name {
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .tl-detail {
+        font-size: 0.68rem;
+        color: var(--text-dim);
+        line-height: 1.6;
+      }
+
+      @media (max-width: 800px) {
+        .hero h1 {
+          font-size: 1.5rem;
+        }
+        .cards {
+          grid-template-columns: 1fr;
+        }
+        .layer-label {
+          width: 90px;
+          font-size: 0.6rem;
+        }
+        .layer-box {
+          min-width: 70px;
+          font-size: 0.68rem;
+        }
+        .tl {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .tl-item:nth-child(3) {
+          border-right: none;
+        }
+      }
+      @media (max-width: 500px) {
+        .tl {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .layer-row {
+          flex-direction: column;
+        }
+        .layer-label {
+          width: 100%;
+          margin-right: 0;
+          margin-bottom: 4px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hero">
+      <h1>로컬 개발 환경 아키텍처</h1>
+      <p class="sub">Windows + Antigravity 기반 · 에이전트 중심 개발 시스템</p>
+    </div>
+
+    <div class="container">
+      <!-- ========== LAYER DIAGRAM ========== -->
+      <div class="diagram">
+        <div class="diagram-rainbow"></div>
+        <h2>시스템 레이어 구조</h2>
+
+        <div class="layer-row">
+          <div class="layer-label c-purple">
+            <div class="num">PHASE 06</div>
+            외부 통합
+          </div>
+          <div class="layer-boxes">
+            <div class="layer-box c-purple">Gemini API</div>
+            <div class="layer-box c-purple">NotebookLM</div>
+            <div class="layer-box c-purple">나노바나나</div>
+            <div class="layer-box c-purple">Custom MCP</div>
+          </div>
+        </div>
+        <div class="arrow-row">↕</div>
+
+        <div class="layer-row">
+          <div class="layer-label c-cyan">
+            <div class="num">PHASE 05</div>
+            에이전트
+          </div>
+          <div class="layer-boxes">
+            <div class="layer-box c-cyan">메타 에이전트<small>생성/관리</small></div>
+            <div class="layer-box c-cyan">작업 에이전트<small>하위 모델</small></div>
+            <div class="layer-box c-cyan">회의 시스템<small>합의/충돌해결</small></div>
+            <div class="layer-box c-cyan">회고 엔진<small>자동 업데이트</small></div>
+          </div>
+        </div>
+        <div class="arrow-row">↕</div>
+
+        <div class="layer-row">
+          <div class="layer-label c-green">
+            <div class="num">PHASE 04</div>
+            최적화
+          </div>
+          <div class="layer-boxes">
+            <div class="layer-box c-green">토큰 최적화<small>낭비 제거</small></div>
+            <div class="layer-box c-green">컨텍스트 관리<small>순서 최적화</small></div>
+            <div class="layer-box c-green">로컬↔웹 전환<small>핫 리로드</small></div>
+          </div>
+        </div>
+        <div class="arrow-row">↕</div>
+
+        <div class="layer-row">
+          <div class="layer-label c-yellow">
+            <div class="num">PHASE 03</div>
+            모니터링
+          </div>
+          <div class="layer-boxes">
+            <div class="layer-box c-yellow">TUI 대시보드<small>Ink 기반</small></div>
+            <div class="layer-box c-yellow">작업 상태 추적<small>진행/멈춤 알림</small></div>
+            <div class="layer-box c-yellow">토큰 시각화<small>실시간</small></div>
+          </div>
+        </div>
+        <div class="arrow-row">↕</div>
+
+        <div class="layer-row">
+          <div class="layer-label c-orange">
+            <div class="num">PHASE 02</div>
+            파이프라인
+          </div>
+          <div class="layer-boxes">
+            <div class="layer-box c-orange">스키마</div>
+            <div class="layer-box c-orange">컨벤션</div>
+            <div class="layer-box c-orange">목업</div>
+            <div class="layer-box c-orange">디자인시스템</div>
+            <div class="layer-box c-orange">UI통합</div>
+            <div class="layer-box c-orange">보안/배포</div>
+          </div>
+        </div>
+        <div class="arrow-row">↕</div>
+
+        <div class="layer-row">
+          <div class="layer-label c-red">
+            <div class="num">PHASE 01</div>
+            기반 인프라
+          </div>
+          <div class="layer-boxes">
+            <div class="layer-box c-red">폴더 구조</div>
+            <div class="layer-box c-red">지침 관리</div>
+            <div class="layer-box c-red">코드 관리<small>Git</small></div>
+            <div class="layer-box c-red">프로젝트 관리</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PHASE 1 ========== -->
+      <div class="phase p1">
+        <div class="phase-head">
+          <span class="phase-tag">PHASE 01</span>
+          <h2 class="phase-title">기반 인프라</h2>
+        </div>
+        <p class="phase-desc">모든 것의 토대. 서브에이전트 A가 먼저 실행</p>
+      </div>
+
+      <div class="tree-wrap">
+        <pre><span class="d">D:\Dev\</span>                              <span class="c"># 개발 루트 (한글 경로 금지)</span>
+├── <span class="d">workspace/</span>                       <span class="c"># 프로젝트 작업 공간</span>
+│   ├── <span class="d">project-alpha/</span>                <span class="c"># 개별 프로젝트</span>
+│   │   ├── <span class="d">src/</span>
+│   │   ├── <span class="d">.antigravity/</span>             <span class="c"># AG 프로젝트별 설정</span>
+│   │   ├── <span class="f">INSTRUCTIONS.md</span>           <span class="c"># 프로젝트 전용 지침</span>
+│   │   ├── <span class="f">CONVENTIONS.md</span>            <span class="c"># 코딩 컨벤션</span>
+│   │   └── <span class="f">CHANGELOG.md</span>
+│   └── <span class="d">project-beta/</span>
+│
+├── <span class="d">system/</span>                           <span class="c"># 시스템 전역 관리</span>
+│   ├── <span class="d">instructions/</span>                 <span class="c"># 지침 저장소 (버전 관리)</span>
+│   │   ├── <span class="d">templates/</span>                <span class="c"># 지침 템플릿</span>
+│   │   │   ├── <span class="f">web-project.md</span>
+│   │   │   ├── <span class="f">app-project.md</span>
+│   │   │   └── <span class="f">agent-task.md</span>
+│   │   ├── <span class="d">active/</span>                   <span class="c"># 현재 사용 중</span>
+│   │   └── <span class="d">archive/</span>                  <span class="c"># 이전 버전 보관</span>
+│   │
+│   ├── <span class="d">agents/</span>                       <span class="c"># 에이전트 정의</span>
+│   │   ├── <span class="d">definitions/</span>              <span class="c"># 에이전트 프로필</span>
+│   │   ├── <span class="d">protocols/</span>                <span class="c"># 회의/소통 프로토콜</span>
+│   │   └── <span class="f">registry.json</span>             <span class="c"># 에이전트 목록</span>
+│   │
+│   ├── <span class="d">pipeline/</span>                     <span class="c"># 개발 파이프라인</span>
+│   │   ├── <span class="f">schema-template.md</span>
+│   │   ├── <span class="f">convention-rules.md</span>
+│   │   ├── <span class="f">design-system.md</span>
+│   │   └── <span class="f">deploy-checklist.md</span>
+│   │
+│   ├── <span class="d">manuals/</span>                      <span class="c"># AI 작업 매뉴얼</span>
+│   │   ├── <span class="f">coding-rules.md</span>
+│   │   ├── <span class="f">quality-gates.md</span>
+│   │   └── <span class="f">review-checklist.md</span>
+│   │
+│   └── <span class="d">mcp/</span>                          <span class="c"># 커스텀 MCP 서버</span>
+│       ├── <span class="d">token-monitor/</span>
+│       ├── <span class="d">project-manager/</span>
+│       └── <span class="d">image-bridge/</span>
+│
+├── <span class="d">tools/</span>                            <span class="c"># 자체 개발 도구</span>
+│   ├── <span class="d">tui-dashboard/</span>                <span class="c"># Ink 기반 TUI</span>
+│   ├── <span class="d">agent-factory/</span>                <span class="c"># 에이전트 생성기</span>
+│   └── <span class="d">retrospect/</span>                   <span class="c"># 회고 엔진</span>
+│
+└── <span class="d">shared/</span>                           <span class="c"># 공유 리소스</span>
+    ├── <span class="d">assets/</span>                       <span class="c"># 이미지, 폰트</span>
+    ├── <span class="d">components/</span>                   <span class="c"># 재사용 컴포넌트</span>
+    └── <span class="d">snippets/</span>                     <span class="c"># 코드 스니펫</span></pre>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">1-1 · FOLDER</div>
+          <h3><span class="ic">📁</span>폴더 관리 구조</h3>
+          <p>
+            위 폴더 트리가 기본 뼈대. 모든 프로젝트는 workspace/ 아래, 시스템 설정은 system/ 아래로
+            분리. 한글 경로 금지.
+          </p>
+          <div class="tags">
+            <span class="tag">D:\Dev\</span><span class="tag">영문 경로</span
+            ><span class="tag">Git</span>
+          </div>
+          <div class="outs">
+            <div class="outs-label">산출물</div>
+            <div class="out-item">폴더 구조 자동 생성 스크립트</div>
+            <div class="out-item">새 프로젝트 스캐폴딩 CLI</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">1-2 · INSTRUCTIONS</div>
+          <h3><span class="ic">📋</span>지침 관리 구조</h3>
+          <p>
+            템플릿 → 복사 → 프로젝트별 커스텀. 이전 지침은 archive/에 자동 보관. 매번 새로 쓰지 않고
+            템플릿에서 분기.
+          </p>
+          <div class="tags">
+            <span class="tag">Markdown</span><span class="tag">Git 버전관리</span
+            ><span class="tag">템플릿</span>
+          </div>
+          <div class="outs">
+            <div class="outs-label">산출물</div>
+            <div class="out-item">지침 템플릿 3종 (웹/앱/에이전트)</div>
+            <div class="out-item">지침 버전 비교 도구</div>
+            <div class="out-item">프로젝트 시작 시 자동 복사 스크립트</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">1-3 · CODE</div>
+          <h3><span class="ic">🔧</span>코드 관리 구조</h3>
+          <p>
+            Git 브랜치 전략, 커밋 컨벤션, PR 체크리스트. AG가 자동 커밋하더라도 규칙을 따르게 설정.
+          </p>
+          <div class="tags">
+            <span class="tag">Git</span><span class="tag">Conventional Commits</span
+            ><span class="tag">.gitignore</span>
+          </div>
+          <div class="outs">
+            <div class="outs-label">산출물</div>
+            <div class="out-item">브랜치 전략 문서</div>
+            <div class="out-item">커밋 컨벤션 + Git hooks</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">1-4 · PROJECT</div>
+          <h3><span class="ic">📊</span>프로젝트 관리 구조</h3>
+          <p>
+            projects.json에 모든 프로젝트 상태 기록. TUI 대시보드에서 이 데이터를 읽어서 시각화.
+          </p>
+          <div class="tags">
+            <span class="tag">JSON</span><span class="tag">상태 추적</span
+            ><span class="tag">우선순위</span>
+          </div>
+          <div class="outs">
+            <div class="outs-label">산출물</div>
+            <div class="out-item">프로젝트 레지스트리 (JSON)</div>
+            <div class="out-item">상태 업데이트 CLI</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PHASE 2 ========== -->
+      <div class="phase p2">
+        <div class="phase-head">
+          <span class="phase-tag">PHASE 02</span>
+          <h2 class="phase-title">개발 파이프라인</h2>
+        </div>
+        <p class="phase-desc">모든 프로젝트가 따르는 표준 프로세스</p>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">2-1 · PIPELINE</div>
+          <h3><span class="ic">🔗</span>웹/앱 개발 파이프라인</h3>
+          <p>
+            스키마 → 컨벤션 → 목업 → 디자인시스템 → UI통합 → 시퀀스/보안 → 배포. 각 단계별
+            체크리스트와 게이트.
+          </p>
+          <div class="tags">
+            <span class="tag">7단계</span><span class="tag">체크리스트</span
+            ><span class="tag">품질 게이트</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">2-2 · MANUAL</div>
+          <h3><span class="ic">📖</span>AI 작업 매뉴얼</h3>
+          <p>
+            AG 에이전트가 참고하는 규칙서. 코딩 규칙, 네이밍 컨벤션, 금지 패턴. AG Rules/Workflow에
+            연결.
+          </p>
+          <div class="tags">
+            <span class="tag">AG Rules</span><span class="tag">AG Workflows</span
+            ><span class="tag">Markdown</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">2-3 · QUALITY</div>
+          <h3><span class="ic">✅</span>품질향상 구조</h3>
+          <p>ESLint, Prettier, TypeScript strict. 파이프라인 매 단계에 품질 게이트 삽입.</p>
+          <div class="tags">
+            <span class="tag">ESLint</span><span class="tag">Prettier</span
+            ><span class="tag">TypeScript</span><span class="tag">Husky</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PHASE 3 ========== -->
+      <div class="phase p3">
+        <div class="phase-head">
+          <span class="phase-tag">PHASE 03</span>
+          <h2 class="phase-title">모니터링 & TUI</h2>
+        </div>
+        <p class="phase-desc">"지금 뭐 하는지 모르겠다"를 완전히 해결</p>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">3-1 · STATUS</div>
+          <h3><span class="ic">🚦</span>작업 상태 + 멈춤 알림</h3>
+          <p>
+            AG 에이전트 로그 파싱 → 진행/대기/멈춤 감지. 일정 시간 로그 없으면 Windows 토스트 알림.
+          </p>
+          <div class="tags">
+            <span class="tag">Node.js</span><span class="tag">파일 워치</span
+            ><span class="tag">Windows 알림</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">3-2 · TOKEN</div>
+          <h3><span class="ic">🪙</span>토큰 실시간 시각화</h3>
+          <p>AG API 호출 로그에서 토큰 사용량 추출. 모델별/세션별/일별 실시간 표시.</p>
+          <div class="tags">
+            <span class="tag">로그 파싱</span><span class="tag">차트</span
+            ><span class="tag">실시간</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">3-3 · TUI</div>
+          <h3><span class="ic">🖥️</span>TUI 대시보드 (Ink)</h3>
+          <p>3-1, 3-2 통합 터미널 UI. React 기반 Ink. 프로젝트/에이전트/토큰 한 화면에.</p>
+          <div class="tags">
+            <span class="tag">Ink</span><span class="tag">React</span
+            ><span class="tag">Node.js</span><span class="tag">TUI</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PHASE 4 ========== -->
+      <div class="phase p4">
+        <div class="phase-head">
+          <span class="phase-tag">PHASE 04</span>
+          <h2 class="phase-title">효율 최적화</h2>
+        </div>
+        <p class="phase-desc">토큰 비용 절감 + 컨텍스트 품질 향상</p>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">4-1 · TOKEN-OPT</div>
+          <h3><span class="ic">⚡</span>토큰 낭비 제거</h3>
+          <p>불필요한 컨텍스트 제거, 프롬프트 압축, 캐시 활용.</p>
+          <div class="tags">
+            <span class="tag">프롬프트 압축</span><span class="tag">컨텍스트 필터링</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">4-2 · CONTEXT</div>
+          <h3><span class="ic">🧠</span>컨텍스트 최적화 순서</h3>
+          <p>지침 → 컨텍스트 → 태스크 순서 고정. AI 최적 성능 정보 전달 순서.</p>
+          <div class="tags">
+            <span class="tag">정보 순서</span><span class="tag">우선순위 체계</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">4-3 · SPEED</div>
+          <h3><span class="ic">🔄</span>로컬↔웹 전환 속도</h3>
+          <p>Vite 핫 리로드, ngrok 터널링, 자동 배포 스크립트.</p>
+          <div class="tags">
+            <span class="tag">Vite</span><span class="tag">ngrok</span
+            ><span class="tag">GitHub Actions</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PHASE 5 ========== -->
+      <div class="phase p5">
+        <div class="phase-head">
+          <span class="phase-tag">PHASE 05</span>
+          <h2 class="phase-title">에이전트 시스템</h2>
+        </div>
+        <p class="phase-desc">AG 멀티 에이전트 기능 극대화</p>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">5-1 · AGENT-MGR</div>
+          <h3><span class="ic">🤖</span>에이전트 관리</h3>
+          <p>에이전트 목록, 역할, 모델, 상태를 registry.json으로 중앙 관리.</p>
+          <div class="tags">
+            <span class="tag">JSON Registry</span><span class="tag">AG Manager</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">5-2 · MODEL-TIER</div>
+          <h3><span class="ic">📶</span>모델 계층화</h3>
+          <p>최상위 = Claude Opus 4.6. 상위 = Gemini 3 Pro / Claude Sonnet. 하위 = 경량 모델.</p>
+          <div class="tags">
+            <span class="tag">Claude Opus 4.6</span><span class="tag">Gemini 3</span
+            ><span class="tag">Claude Sonnet</span><span class="tag">경량 모델</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">5-3 · FACTORY</div>
+          <h3><span class="ic">🏭</span>에이전트 생성 에이전트</h3>
+          <p>템플릿 기반 새 에이전트 프로필 자동 생성 메타 에이전트.</p>
+          <div class="tags">
+            <span class="tag">템플릿 엔진</span><span class="tag">메타 에이전트</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">5-4 · MEETING</div>
+          <h3><span class="ic">💬</span>에이전트 회의</h3>
+          <p>에이전트 간 메시지 패싱, 투표 기반 충돌 해결, 회의록 자동 생성.</p>
+          <div class="tags">
+            <span class="tag">메시지 큐</span><span class="tag">합의 프로토콜</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">5-5 · RETROSPECT</div>
+          <h3><span class="ic">🔁</span>회고 & 자동 업데이트</h3>
+          <p>작업 완료 → 회고 → 매뉴얼/지침 갱신 제안 → 승인 시 반영.</p>
+          <div class="tags">
+            <span class="tag">회고 엔진</span><span class="tag">지침 자동갱신</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PHASE 6 ========== -->
+      <div class="phase p6">
+        <div class="phase-head">
+          <span class="phase-tag">PHASE 06</span>
+          <h2 class="phase-title">통합 & 확장</h2>
+        </div>
+        <p class="phase-desc">외부 서비스 연결 + 커스텀 MCP</p>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">6-1 · MCP</div>
+          <h3><span class="ic">🔌</span>커스텀 MCP 서버</h3>
+          <p>프로젝트 관리 MCP, 토큰 모니터 MCP, 이미지 브릿지 MCP 직접 제작.</p>
+          <div class="tags">
+            <span class="tag">MCP SDK</span><span class="tag">Node.js</span
+            ><span class="tag">TypeScript</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">6-2 · GOOGLE</div>
+          <h3><span class="ic">🌐</span>AG + Gemini + NotebookLM</h3>
+          <p>AG 내 Gemini API 직접 호출 + NotebookLM 문서 분석 자동화.</p>
+          <div class="tags">
+            <span class="tag">Gemini API</span><span class="tag">NotebookLM</span
+            ><span class="tag">Claude API</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">6-3 · NANOBANANA</div>
+          <h3><span class="ic">🖼️</span>나노바나나 이미지 연동</h3>
+          <p>나노바나나 생성 이미지 → shared/assets/ 자동 저장 → AG 자동 참조.</p>
+          <div class="tags">
+            <span class="tag">파일 워치</span><span class="tag">자동 동기화</span
+            ><span class="tag">MCP</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="card-id">6-4 · PLUGINS</div>
+          <h3><span class="ic">🧩</span>AG 플러그인</h3>
+          <p>VS Code 확장 호환. ESLint, Prettier, GitLens + AG 브라우저 에이전트 확장.</p>
+          <div class="tags">
+            <span class="tag">VS Code 확장</span><span class="tag">AG 브라우저</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== DEPS ========== -->
+      <div class="deps">
+        <h3>🛠 Windows 필수 설치</h3>
+        <div class="dep-grid">
+          <div class="dep">
+            <div class="di">⬡</div>
+            <div>
+              <div class="dn">Antigravity</div>
+              <div class="dd">메인 IDE · antigravity.google</div>
+            </div>
+          </div>
+          <div class="dep">
+            <div class="di">🟢</div>
+            <div>
+              <div class="dn">Node.js LTS</div>
+              <div class="dd">TUI, MCP, 스크립트 런타임</div>
+            </div>
+          </div>
+          <div class="dep">
+            <div class="di">🔶</div>
+            <div>
+              <div class="dn">Git</div>
+              <div class="dd">코드 버전 관리</div>
+            </div>
+          </div>
+          <div class="dep">
+            <div class="di">🟦</div>
+            <div>
+              <div class="dn">pnpm</div>
+              <div class="dd">패키지 매니저</div>
+            </div>
+          </div>
+          <div class="dep">
+            <div class="di">🐍</div>
+            <div>
+              <div class="dn">Python 3.12+</div>
+              <div class="dd">자동화 스크립트</div>
+            </div>
+          </div>
+          <div class="dep">
+            <div class="di">📝</div>
+            <div>
+              <div class="dn">Windows Terminal</div>
+              <div class="dd">TUI 대시보드 실행</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== TIMELINE ========== -->
+      <div class="timeline-wrap">
+        <h3>📅 실행 타임라인 (총 10~14일)</h3>
+        <div class="tl">
+          <div class="tl-item">
+            <div class="tl-week">DAY 1</div>
+            <div class="tl-name" style="color: var(--accent-red)">1단계</div>
+            <div class="tl-detail">폴더 구조<br />지침 템플릿<br />Git 설정</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-week">DAY 2</div>
+            <div class="tl-name" style="color: var(--accent-orange)">2단계</div>
+            <div class="tl-detail">파이프라인<br />AI 매뉴얼<br />품질 게이트</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-week">DAY 3-5</div>
+            <div class="tl-name" style="color: var(--accent-yellow)">3단계</div>
+            <div class="tl-detail">상태 추적<br />토큰 시각화<br />TUI 대시보드</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-week">DAY 6</div>
+            <div class="tl-name" style="color: var(--accent-green)">4단계</div>
+            <div class="tl-detail">토큰 최적화<br />컨텍스트 순서<br />배포 자동화</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-week">DAY 7-10</div>
+            <div class="tl-name" style="color: var(--accent-cyan)">5단계</div>
+            <div class="tl-detail">에이전트 관리<br />모델 계층화<br />회의 시스템</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-week">DAY 11-14</div>
+            <div class="tl-name" style="color: var(--accent-purple)">6단계</div>
+            <div class="tl-detail">MCP 제작<br />Gemini 통합<br />나노바나나</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
