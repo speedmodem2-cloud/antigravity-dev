@@ -1,0 +1,16 @@
+{
+  "name": "agent-factory",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "에이전트 프로필 자동 생성기",
+  "bin": {
+    "agent-factory": "./bin/create.js"
+  },
+  "scripts": {
+    "create": "tsx src/index.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.0"
+  }
+}

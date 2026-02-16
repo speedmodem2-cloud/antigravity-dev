@@ -1,0 +1,14 @@
+{
+  "name": "retrospect-engine",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "작업 완료 후 회고 + 지침 자동 갱신 제안",
+  "scripts": {
+    "run": "tsx src/index.ts",
+    "analyze": "tsx src/index.ts analyze"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.0"
+  }
+}

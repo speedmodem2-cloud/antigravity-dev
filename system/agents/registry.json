@@ -1,11 +1,66 @@
 {
-  "version": "1.0",
+  "version": "2.0",
   "lastUpdated": "2026-02-16",
-  "agents": [],
   "modelTiers": {
-    "top": ["claude-opus-4.6"],
-    "high": ["gemini-3-pro", "claude-sonnet-4.5"],
-    "mid": ["gemini-3-pro-low", "claude-haiku-4.5"],
-    "low": ["gpt-oss"]
-  }
+    "top": {
+      "models": ["claude-opus-4.6"],
+      "usage": "아키텍처 설계, 복잡한 추론, 멀티파일 리팩토링"
+    },
+    "high": {
+      "models": ["gemini-3-pro", "claude-sonnet-4.5"],
+      "usage": "일반 코딩, 코드 리뷰, 기능 구현"
+    },
+    "mid": {
+      "models": ["claude-haiku-4.5", "gemini-3-flash"],
+      "usage": "단순 작업, 문서 생성, 포맷팅"
+    },
+    "low": {
+      "models": ["gpt-oss"],
+      "usage": "로그 파싱, 반복 작업, 데이터 변환"
+    }
+  },
+  "agents": [
+    {
+      "id": "architect",
+      "name": "아키텍트",
+      "role": "시스템 설계 및 구조 결정",
+      "modelTier": "top",
+      "status": "active",
+      "profile": "definitions/architect.md"
+    },
+    {
+      "id": "developer",
+      "name": "개발자",
+      "role": "기능 구현 및 코드 작성",
+      "modelTier": "high",
+      "status": "active",
+      "profile": "definitions/developer.md"
+    },
+    {
+      "id": "reviewer",
+      "name": "리뷰어",
+      "role": "코드 리뷰 및 품질 검증",
+      "modelTier": "high",
+      "status": "active",
+      "profile": "definitions/reviewer.md"
+    },
+    {
+      "id": "documenter",
+      "name": "문서화",
+      "role": "문서 생성 및 매뉴얼 관리",
+      "modelTier": "mid",
+      "status": "active",
+      "profile": "definitions/documenter.md"
+    },
+    {
+      "id": "tester",
+      "name": "테스터",
+      "role": "테스트 작성 및 품질 보증",
+      "modelTier": "high",
+      "status": "active",
+      "profile": "definitions/tester.md"
+    }
+  ],
+  "meetingProtocol": "protocols/meeting.md",
+  "retrospectProtocol": "protocols/retrospect.md"
 }
