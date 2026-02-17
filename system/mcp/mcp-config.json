@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "project-manager": {
+      "command": "node",
+      "args": ["--import", "tsx", "C:/Dev/system/mcp/project-manager/src/index.ts"],
+      "description": "프로젝트 CRUD 관리"
+    },
+    "token-monitor": {
+      "command": "node",
+      "args": ["--import", "tsx", "C:/Dev/system/mcp/token-monitor/src/index.ts"],
+      "description": "토큰 사용량 기록/분석"
+    },
+    "image-bridge": {
+      "command": "node",
+      "args": ["--import", "tsx", "C:/Dev/system/mcp/image-bridge/src/index.ts"],
+      "description": "이미지 동기화/검색"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@dev/gemini-bridge",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Gemini API + NotebookLM 연동 모듈",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "node --import tsx src/index.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.0"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "@dev/mcp-image-bridge",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "이미지 브릿지 MCP 서버 - 나노바나나 이미지 동기화",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "node --import tsx src/index.ts",
+    "dev": "node --import tsx --watch src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.0"
+  }
+}
