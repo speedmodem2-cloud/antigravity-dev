@@ -5,9 +5,10 @@ import type { PhaseInfo } from '../modules/phase-tracker.js';
 
 interface PhaseBarProps {
   phases: PhaseInfo[];
+  isWaveBased?: boolean;
 }
 
-export const PhaseBar: React.FC<PhaseBarProps> = ({ phases }) => {
+export const PhaseBar: React.FC<PhaseBarProps> = ({ phases, isWaveBased }) => {
   if (phases.length === 0) return null;
 
   const activePhase = phases.find((p) => p.status === 'active');
@@ -38,15 +39,23 @@ export const PhaseBar: React.FC<PhaseBarProps> = ({ phases }) => {
               {' → '}
             </Text>
           )}
-          <PhaseSegment phase={phase} highlight={highlightNum === phase.number} />
+          <PhaseSegment
+            phase={phase}
+            highlight={highlightNum === phase.number}
+            isWaveBased={isWaveBased}
+          />
         </Box>
       ))}
     </Box>
   );
 };
 
-const PhaseSegment: React.FC<{ phase: PhaseInfo; highlight: boolean }> = ({ phase, highlight }) => {
-  const label = `P${phase.number}`;
+const PhaseSegment: React.FC<{ phase: PhaseInfo; highlight: boolean; isWaveBased?: boolean }> = ({
+  phase,
+  highlight,
+  isWaveBased,
+}) => {
+  const label = isWaveBased ? `W${phase.number}` : `P${phase.number}`;
 
   if (phase.status === 'done') {
     return (

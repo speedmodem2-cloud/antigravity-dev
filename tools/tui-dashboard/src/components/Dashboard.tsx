@@ -28,6 +28,18 @@ function getActiveProjectName(): string | undefined {
   return undefined;
 }
 
+function getIsWaveBased(): boolean {
+  try {
+    if (existsSync(ACTIVE_AGENTS_PATH)) {
+      const data = JSON.parse(readFileSync(ACTIVE_AGENTS_PATH, 'utf-8'));
+      return Array.isArray(data.roster) && data.roster.length > 0;
+    }
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
+
 function getProjectWindow(): { startedAt?: string; endedAt?: string } {
   try {
     if (existsSync(ACTIVE_AGENTS_PATH)) {
@@ -95,6 +107,7 @@ export const Dashboard: React.FC = () => {
     sessionId: '',
   });
   const [hasProjects, setHasProjects] = useState(false);
+  const [isWaveBased, setIsWaveBased] = useState(false);
   const [clock, setClock] = useState(new Date());
 
   useInput((input) => {
@@ -144,6 +157,7 @@ export const Dashboard: React.FC = () => {
       setSession(sessionTracker.getSession());
       const projPath = getActiveProjectPath();
       setPhases(getPhases(projPath));
+      setIsWaveBased(getIsWaveBased());
       checkProjects();
       setClock(new Date());
     }, 2000);
@@ -153,6 +167,7 @@ export const Dashboard: React.FC = () => {
     setTokenSummary(tokenTracker.getSummary());
     setSession(sessionTracker.getSession());
     setPhases(getPhases(initialProjPath));
+    setIsWaveBased(getIsWaveBased());
     checkProjects();
 
     return () => {
@@ -206,7 +221,7 @@ export const Dashboard: React.FC = () => {
       <AgentPanel agents={agents} session={session} />
       <TokenPanel summary={tokenSummary} />
       {hasProjects && <ProjectPanel registryPath={PROJECTS_PATH} />}
-      <PhaseBar phases={phases} />
+      <PhaseBar phases={phases} isWaveBased={isWaveBased} />
     </Box>
   );
 };
