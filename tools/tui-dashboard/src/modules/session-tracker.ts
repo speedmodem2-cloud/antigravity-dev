@@ -16,10 +16,62 @@ export interface SessionInfo {
   completedCount: number;
   totalCount: number;
   sessionId: string;
+  model?: string;
 }
 
 const CLAUDE_DIR = join(process.env.USERPROFILE ?? process.env.HOME ?? '', '.claude');
 const TODOS_DIR = join(CLAUDE_DIR, 'todos');
+const PROJECTS_CLAUDE_DIR = join(CLAUDE_DIR, 'projects');
+
+function detectSessionModel(): string {
+  try {
+    if (!existsSync(PROJECTS_CLAUDE_DIR)) return '';
+    // Find the most recently modified JSONL in any project dir
+    let latestFile = '';
+    let latestMtime = 0;
+    const projectDirs = readdirSync(PROJECTS_CLAUDE_DIR);
+    for (const dir of projectDirs) {
+      const dirPath = join(PROJECTS_CLAUDE_DIR, dir);
+      try {
+        const stat = statSync(dirPath);
+        if (!stat.isDirectory()) {
+          // It may be a .jsonl directly under projects
+          if (dir.endsWith('.jsonl') && stat.mtimeMs > latestMtime) {
+            latestMtime = stat.mtimeMs;
+            latestFile = dirPath;
+          }
+          continue;
+        }
+        const files = readdirSync(dirPath).filter((f: string) => f.endsWith('.jsonl'));
+        for (const f of files) {
+          const fp = join(dirPath, f);
+          const ms = statSync(fp).mtimeMs;
+          if (ms > latestMtime) {
+            latestMtime = ms;
+            latestFile = fp;
+          }
+        }
+      } catch {
+        /* skip */
+      }
+    }
+    if (!latestFile) return '';
+    const content = readFileSync(latestFile, 'utf-8');
+    for (const line of content.split('\n')) {
+      if (!line.trim()) continue;
+      try {
+        const obj = JSON.parse(line);
+        const model = obj?.message?.model as string | undefined;
+        if (model && typeof model === 'string' && model.startsWith('claude-')) return model;
+      } catch {
+        /* skip */
+      }
+    }
+    return '';
+  } catch {
+    return '';
+  }
+}
 
 function extractPhaseTag(content: string): string {
   // "Phase 3: TASK 10-12 (레이아웃+히어로+파티클)" → "P3:TASK 10-12"
@@ -91,6 +143,7 @@ export class SessionTracker {
         completedCount,
         totalCount: todos.length,
         sessionId,
+        model: detectSessionModel(),
       };
     } catch {
       return empty;

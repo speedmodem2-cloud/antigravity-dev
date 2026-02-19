@@ -168,7 +168,9 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session }) => {
   const sessionTask = session.active ? `${tagPrefix}${taskBase}${dots}` : `${tagPrefix}${taskBase}`;
   const sessionProgress =
     session.totalCount > 0 ? `${session.completedCount}/${session.totalCount}` : '';
-  const sessionElapsed = formatElapsed(Date.now() - session.lastActivity.getTime());
+  const sessionActivityMs = session.lastActivity.getTime();
+  const sessionElapsed =
+    sessionActivityMs <= 0 ? '-' : formatElapsed(Date.now() - sessionActivityMs);
 
   const anyRunning = agents.some((a) => a.status === 'running');
   const hasAnyAgents = agents.length > 0;
@@ -200,7 +202,7 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session }) => {
       {renderRow(
         sessionIcon,
         'Claude',
-        'Opus',
+        shortModel(session.model ?? 'claude-sonnet-4-6'),
         sessionTask,
         sessionProgress,
         sessionElapsed,
@@ -226,7 +228,11 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session }) => {
             );
             lastPhase = waveKey;
           }
-          rows.push(renderAgentRow(agent, dots));
+          rows.push(
+            <React.Fragment key={`agent-${agent.role}-${agent.name}`}>
+              {renderAgentRow(agent, dots)}
+            </React.Fragment>,
+          );
         }
         return rows;
       })()}
