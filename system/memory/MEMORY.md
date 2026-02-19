@@ -12,6 +12,7 @@
 
 ## Pre-flight
 
+- **TUI 항상 실행 (MANDATORY)**: 세션 시작 시 즉시 `cd c:/Dev/tools/tui-dashboard && pnpm dev` 백그라운드 실행. 이미 실행 중이면 skip. 프로젝트 작업 전체 기간 동안 유지.
 - Check env vars, deps, dirs, MCP before coding.
 - Proactive: verify before user asks.
 
@@ -31,36 +32,37 @@
 
 - `phase-manager`: `tsx tools/phase-manager/src/index.ts <cmd>` (init/advance/complete/skip/status/reset)
 - `retrospect`: `tsx tools/retrospect/src/index.ts analyze <project>`
-- `tui-dashboard` v2.2: auto-launch on project start (`cd c:/Dev/tools/tui-dashboard && pnpm dev`)
+- `tui-dashboard` v2.3: auto-launch on project start (`cd c:/Dev/tools/tui-dashboard && pnpm dev`)
 
-## Agent Models (프로젝트별 편성)
+## Agent Models
 
-- 기본 풀: Opus, Sonnet, Gemini, Haiku — 프로젝트마다 Phase 0에서 선정
-- 난이도: 단순→Haiku, 복잡→Sonnet, 아키텍처→Opus
-- 불필요한 모델 생략 가능
+- **Opus 서브에이전트**: `Task(model:"opus")` — Phase 0 설계 (Wave 계획, 인터페이스 계약, 로스터)
+- **현 세션(Sonnet) = 디스패처/통합자** — Opus 계획 실행, Wave 디스패치, app.module.ts 통합, 빌드 검증
+- **Sonnet 서브에이전트**: 구현 (자체 빌드 검증, 에러 시 1회 자체 수정)
+- **Haiku 서브에이전트**: docs, 단순 편집, 검색 (기본 모델)
 
 ## Orchestration (CRITICAL) → 상세: [orchestration.md](orchestration.md)
 
-- **Opus = conductor only**. 코드 직접 작성 X. 판단+디스패치만. 목표 <20%.
-- **Wave dispatch**: Phase 순서 아닌 의존성 그래프 기준으로 Wave 구성. 파일 충돌 없는 태스크 무조건 동시 실행. 최대 4개/Wave 목표. → 상세: [orchestration.md](orchestration.md)
+- **Phase 0**: `Task(model:"opus")` → 아키텍처 설계 + Wave 계획 + 인터페이스 계약 반환
+- **Wave dispatch**: 의존성 그래프 기준 Wave 구성. 파일 충돌 없는 태스크 동시 실행. 최대 4개/Wave.
 - `app.module.ts` 등 통합 파일은 Wave 완료 후 오케스트레이터 직접 처리.
-- Sonnet: 구현 (자체 빌드 검증, 에러 시 1회 자체 수정)
+- **에이전트 범위 명시 필수**: 프롬프트에 "이 모듈만, app.module.ts 수정 금지" 명시
 - **커밋**: 5파일 이하, 모듈당 1커밋
-- **Opus-Gemini 핑퐁**: 계획 단계 중요 결정 시 필수 (gemini-bridge MCP)
-- **Pre-Phase Agent Planning**: Phase 0에서 프로젝트별 에이전트 배치 계획 작성
 
 ## Common Rules
 
 - Phase skip = always confirm | Post-project = retrospective + changelog
 - pnpm hardlinks (actual disk < reported) | Dev env = maintenance (not pipeline)
 - Doc split: AI→English compressed (`manuals/`), User→Korean readable (`docs/`)
+- TUI auto-launch on project start (see Pre-flight)
 
 ## Project Lessons → 상세: [project-lessons.md](project-lessons.md)
 
 - P1: WebP ≤500KB, 2+ visual layers, dist ≤5MB
 - P2: data/design 분리, typography-first
 - P3: image strategy BEFORE coding, hero≠body bg
-- P4: registerAsync, unique test emails, soft delete for FK, Opus 71%→target <20%
+- P4: registerAsync, unique test emails, soft delete for FK
+- P5: Wave dispatch 검증 완료. uuid@13 ESM→moduleNameMapper. 에이전트 범위 초과 주의.
 
 ## Subagent Templates → `system/agents/templates/`
 

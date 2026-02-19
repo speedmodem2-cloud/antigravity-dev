@@ -1,101 +1,15 @@
 {
-  "project": "shop-backend2-1",
-  "projectStartedAt": "2026-02-19T12:00:00.000Z",
-  "projectEndedAt": "2026-02-19T14:00:00.000Z",
-  "currentPhase": 5,
+  "project": "tui-maintenance",
+  "currentPhase": 1,
   "roster": [
     {
-      "name": "Sonnet-Scaffold",
+      "name": "Sonnet-TUI",
       "model": "claude-sonnet-4-6",
-      "task": "NestJS + Docker + config",
+      "task": "TUI 고도화 — 감사 및 개선",
       "phase": 1,
-      "status": "completed"
-    },
-    {
-      "name": "Sonnet-Auth",
-      "model": "claude-sonnet-4-6",
-      "task": "users entity + auth/JWT",
-      "phase": 2,
-      "status": "completed"
-    },
-    {
-      "name": "Sonnet-Auctions",
-      "model": "claude-sonnet-4-6",
-      "task": "auction entity + CRUD + scheduler",
-      "phase": 2,
-      "status": "completed"
-    },
-    {
-      "name": "Sonnet-Redis",
-      "model": "claude-sonnet-4-6",
-      "task": "common/redis service",
-      "phase": 2,
-      "status": "completed"
-    },
-    {
-      "name": "Sonnet-NotifSchema",
-      "model": "claude-sonnet-4-6",
-      "task": "notification entity only",
-      "phase": 2,
-      "status": "completed"
-    },
-    {
-      "name": "Sonnet-Bids",
-      "model": "claude-sonnet-4-6",
-      "task": "bid entity + placeBid tx",
-      "phase": 3,
-      "status": "completed"
-    },
-    {
-      "name": "Sonnet-WS",
-      "model": "claude-sonnet-4-6",
-      "task": "auction.gateway + ws-jwt.guard",
-      "phase": 3,
-      "status": "completed"
-    },
-    {
-      "name": "Sonnet-NotifSvc",
-      "model": "claude-sonnet-4-6",
-      "task": "notification service + controller",
-      "phase": 3,
-      "status": "completed"
-    },
-    {
-      "name": "Sonnet-Unit",
-      "model": "claude-sonnet-4-6",
-      "task": "unit tests (19 pass)",
-      "phase": 4,
-      "status": "completed"
-    },
-    {
-      "name": "Sonnet-Infra",
-      "model": "claude-sonnet-4-6",
-      "task": "health check endpoint",
-      "phase": 4,
-      "status": "completed"
-    },
-    {
-      "name": "Sonnet-E2E",
-      "model": "claude-sonnet-4-6",
-      "task": "E2E tests (13 pass)",
-      "phase": 5,
-      "status": "completed"
-    },
-    {
-      "name": "Haiku-Deploy",
-      "model": "claude-haiku-4-5-20251001",
-      "task": "Dockerfile multistage + compose",
-      "phase": 5,
-      "status": "completed"
-    },
-    {
-      "name": "Haiku-Docs",
-      "model": "claude-haiku-4-5-20251001",
-      "task": "README + .env.example",
-      "phase": 5,
       "status": "completed"
     }
   ],
   "agents": [],
-  "updatedAt": "2026-02-19T14:00:00.000Z"
+  "updatedAt": "2026-02-19T15:30:00.000Z"
 }
