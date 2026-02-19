@@ -9,8 +9,6 @@ interface PhaseBarProps {
 }
 
 export const PhaseBar: React.FC<PhaseBarProps> = ({ phases, isWaveBased }) => {
-  if (phases.length === 0) return null;
-
   const activePhase = phases.find((p) => p.status === 'active');
   const activeNum = activePhase?.number ?? -1;
   const prevActiveNum = useRef<number>(activeNum);
@@ -26,6 +24,8 @@ export const PhaseBar: React.FC<PhaseBarProps> = ({ phases, isWaveBased }) => {
     prevActiveNum.current = activeNum;
     return undefined;
   }, [activeNum]);
+
+  if (phases.length === 0) return null;
 
   return (
     <Box borderStyle="round" borderColor="magenta" paddingX={1} gap={0}>

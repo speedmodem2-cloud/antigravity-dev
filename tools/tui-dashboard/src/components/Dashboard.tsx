@@ -94,7 +94,7 @@ export const Dashboard: React.FC = () => {
     history: [],
     isDemo: true,
   });
-  const [frozenSummary, setFrozenSummary] = useState<TokenSummary | null>(null);
+  const frozenSummaryRef = useRef<TokenSummary | null>(null);
   const [phases, setPhases] = useState<PhaseInfo[]>([]);
   const [session, setSession] = useState<SessionInfo>({
     active: false,
@@ -148,10 +148,10 @@ export const Dashboard: React.FC = () => {
         // Active project → normal update
         const newSummary = tokenTracker.getSummary();
         setTokenSummary(newSummary);
-        setFrozenSummary(newSummary); // save last value
+        frozenSummaryRef.current = newSummary; // save last value
       } else {
         // No active project → keep last frozen summary
-        if (frozenSummary) setTokenSummary(frozenSummary);
+        if (frozenSummaryRef.current) setTokenSummary(frozenSummaryRef.current);
       }
 
       setSession(sessionTracker.getSession());

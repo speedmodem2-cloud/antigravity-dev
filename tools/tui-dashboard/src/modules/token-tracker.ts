@@ -76,7 +76,6 @@ export class TokenTracker {
         };
       });
 
-      this.isDemo = false;
       return { loaded: true, recordCount: this.usages.length };
     } catch {
       return { loaded: false, recordCount: 0 };

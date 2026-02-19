@@ -43,7 +43,6 @@ function modelColor(model: string): string {
 const LABEL_WIDTH = 7;
 const COUNT_WIDTH = 8; // " 167k"
 const DETAIL_WIDTH = 20; // " (in:95k out:72k)"
-const BAR_MIN = 8; // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export const TokenPanel: React.FC<TokenPanelProps> = ({ summary }) => {
   const maxModelTokens = Math.max(...Array.from(summary.byModel.values()).map((m) => m.total), 1);

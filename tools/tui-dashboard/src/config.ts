@@ -27,8 +27,13 @@ export const VERSION = _version;
 /* ── Model display names ── */
 
 export const SHORT_MODEL: Record<string, string> = {
+  'claude-opus-4-6': 'Opus',
   'claude-opus-4.6': 'Opus',
+  'claude-sonnet-4-6': 'Son',
+  'claude-sonnet-4.6': 'Son',
+  'claude-sonnet-4-5': 'Son',
   'claude-sonnet-4.5': 'Son',
+  'claude-haiku-4-5': 'Hai',
   'claude-haiku-4.5': 'Hai',
   'gemini-3-pro': 'Gem',
 };
@@ -46,8 +51,13 @@ export function shortModel(model: string): string {
 /* ── Model costs ($/token) ── */
 
 export const MODEL_COSTS: Record<string, { input: number; output: number }> = {
+  'claude-opus-4-6': { input: 15.0 / 1e6, output: 75.0 / 1e6 },
   'claude-opus-4.6': { input: 15.0 / 1e6, output: 75.0 / 1e6 },
+  'claude-sonnet-4-6': { input: 3.0 / 1e6, output: 15.0 / 1e6 },
+  'claude-sonnet-4.6': { input: 3.0 / 1e6, output: 15.0 / 1e6 },
+  'claude-sonnet-4-5': { input: 3.0 / 1e6, output: 15.0 / 1e6 },
   'claude-sonnet-4.5': { input: 3.0 / 1e6, output: 15.0 / 1e6 },
+  'claude-haiku-4-5': { input: 0.8 / 1e6, output: 4.0 / 1e6 },
   'claude-haiku-4.5': { input: 0.8 / 1e6, output: 4.0 / 1e6 },
   'gemini-3-pro': { input: 1.25 / 1e6, output: 10.0 / 1e6 },
 };
