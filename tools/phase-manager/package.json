@@ -1,0 +1,17 @@
+{
+  "name": "phase-manager",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "init": "tsx src/index.ts init",
+    "advance": "tsx src/index.ts advance",
+    "status": "tsx src/index.ts status"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
