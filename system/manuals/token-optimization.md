@@ -1,71 +1,38 @@
-# 토큰 최적화 가이드
+# Token Optimization
 
-## 원칙
+## Prompt Compression
 
-토큰 = 비용. 불필요한 토큰은 비용 낭비 + 컨텍스트 오염.
+- Instructions ≤500 lines
+- Deduplicate → reference links
+- Code examples ≤3 lines
+- Comments: key points only
 
-## 1. 프롬프트 압축 규칙
+## Context Filter
 
-### 지침 파일 최적화
+**Include:** task-related files, changed sections, errors, type defs
+**Exclude:** node_modules, dist/, build/, lock files, unchanged files, resolved issues
 
-- 지침은 500줄 이하로 유지
-- 반복되는 내용은 참조 링크로 대체
-- 예시 코드는 최소한으로 (3줄 이내)
-- 주석/설명은 핵심만
+## Size Limits
 
-### 나쁜 예시 (토큰 낭비)
+| Item         | Max       |
+| ------------ | --------- |
+| Single file  | 500 lines |
+| Instruction  | 200 lines |
+| Prompt       | 100 lines |
+| Code example | 20 lines  |
 
-```
-이 프로젝트에서는 반드시 TypeScript를 사용해야 합니다.
-TypeScript는 정적 타입 언어로 JavaScript의 슈퍼셋입니다.
-TypeScript를 사용하면 컴파일 타임에 에러를 잡을 수 있습니다.
-따라서 모든 새 파일은 .ts 또는 .tsx 확장자를 사용하세요.
-```
+## Caching
 
-### 좋은 예시 (토큰 절약)
+- Repeated Q&A → manual docs (reference)
+- Common patterns → shared/snippets/
+- Frequent commands → scripts
 
-```
-- 새 파일: TypeScript (.ts/.tsx) 필수
-```
+## Model Selection
 
-## 2. 컨텍스트 필터링
-
-### 포함해야 할 것
-
-- 현재 작업과 직접 관련된 파일만
-- 변경할 파일의 관련 부분만 (전체 X)
-- 에러 메시지 (있을 경우)
-- 관련 타입 정의
-
-### 제외해야 할 것
-
-- node_modules 내용
-- 빌드 산출물 (dist/, build/)
-- 락 파일 (pnpm-lock.yaml)
-- 변경하지 않을 파일
-- 이전 대화 내용 중 해결된 이슈
-
-## 3. 파일 크기 제한
-
-| 항목      | 권장 최대 |
-| --------- | --------- |
-| 단일 파일 | 500줄     |
-| 지침 파일 | 200줄     |
-| 프롬프트  | 100줄     |
-| 예시 코드 | 20줄      |
-
-## 4. 캐시 활용
-
-- 반복 질문은 매뉴얼 문서로 분리 → 참조
-- 공통 패턴은 스니펫으로 저장 (shared/snippets/)
-- 자주 쓰는 명령어는 스크립트로 자동화
-
-## 5. 모델 선택 기준
-
-| 작업 유형     | 권장 모델                        | 이유             |
-| ------------- | -------------------------------- | ---------------- |
-| 아키텍처 설계 | Claude Opus 4.6                  | 복잡한 추론 필요 |
-| 일반 코딩     | Claude Sonnet 4.5 / Gemini 3 Pro | 비용 대비 성능   |
-| 단순 작업     | Claude Haiku 4.5                 | 최저 비용        |
-| 코드 리뷰     | Gemini 3 Pro                     | 빠른 응답        |
-| 문서 생성     | Haiku / 경량 모델                | 비용 절약        |
+| Task         | Model                     |
+| ------------ | ------------------------- |
+| Architecture | Opus 4.6                  |
+| Coding       | Sonnet 4.5 / Gemini 3 Pro |
+| Simple tasks | Haiku 4.5                 |
+| Code review  | Gemini 3 Pro              |
+| Docs         | Haiku                     |

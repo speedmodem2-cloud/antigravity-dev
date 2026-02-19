@@ -1,17 +1,43 @@
-# 코드 리뷰 체크리스트
+# Review Checklist
 
-## 기능
-- [ ] 요구사항과 일치하는가
-- [ ] 엣지 케이스 처리됐는가
-- [ ] 에러 상황 처리됐는가
+## Function
 
-## 코드
-- [ ] 네이밍이 명확한가
-- [ ] 중복 코드 없는가
-- [ ] 불필요한 주석 없는가
-- [ ] 타입이 정확한가
+- [ ] Matches requirements
+- [ ] Edge cases handled
+- [ ] Errors handled
 
-## 성능
-- [ ] 불필요한 리렌더링 없는가
-- [ ] 메모리 누수 가능성 없는가
-- [ ] 적절한 최적화 적용됐는가
+## Code
+
+- [ ] Clear naming
+- [ ] No duplication
+- [ ] No unnecessary comments
+- [ ] Accurate types
+
+## Performance
+
+- [ ] No unnecessary re-renders
+- [ ] No memory leaks
+- [ ] Appropriate optimization
+
+## Accessibility
+
+- [ ] Semantic HTML (header, nav, main, section, footer)
+- [ ] Skip navigation link
+- [ ] focus-visible on interactive elements
+- [ ] ARIA role/label
+- [ ] img alt or aria-hidden
+- [ ] WCAG AA contrast
+- [ ] Keyboard-only navigable
+
+## Assets
+
+- [ ] WebP format (if images)
+- [ ] ≤500KB per image (if images)
+- [ ] dist/ ≤5MB (SPA)
+- [ ] No unused assets
+
+## CSS Visual Layers (no-image projects)
+
+- [ ] ≥2 layers per section
+- [ ] aria-hidden="true" on decorative
+- [ ] prefers-reduced-motion support

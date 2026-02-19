@@ -1,28 +1,40 @@
-# AI 코딩 규칙
+# Coding Rules
 
-## 필수 규칙
-1. 코드 변경 전 현재 파일 전체 읽기
-2. 한 번에 한 파일만 수정
-3. 수정 후 반드시 lint 실행
-4. 새 파일 생성 시 TypeScript 사용
-5. 모든 함수에 반환 타입 명시
-6. 매직 넘버 금지 (상수 파일 분리)
+## Required
 
-## 금지 사항
-- any 타입 사용
-- var 사용
-- == 사용 (=== 만 허용)
-- console.log 남기기
-- 주석 없는 복잡한 로직
-- 500줄 이상의 단일 파일
+- Read file before edit
+- One file at a time
+- Lint after edit
+- TypeScript for new files (.ts/.tsx)
+- Explicit return types on all functions
+- No magic numbers → constants file
 
-## 코드 작성 순서
-1. 타입/인터페이스 정의
-2. 상수 정의
-3. 유틸 함수
-4. 메인 로직
-5. export
+## Forbidden
 
-## 에러 처리
-- try-catch에 구체적 에러 타입 사용
-- 사용자에게 보이는 에러 메시지는 한국어
+- `any` type
+- `var`
+- `==` (use `===`)
+- `console.log` in production
+- Uncommented complex logic
+- Single file >500 lines
+
+## Code Order
+
+1. Types/interfaces
+2. Constants
+3. Utils
+4. Main logic
+5. Exports
+
+## Error Handling
+
+- Specific error types in try-catch
+- User-facing messages: Korean
+
+## Image Rules
+
+- WebP preferred (PNG/JPG originals only)
+- Max 500KB per image
+- Background: object-fit: cover + overlay
+- Vite static asset handling
+- Originals: shared/assets/ → Project: src/assets/images/

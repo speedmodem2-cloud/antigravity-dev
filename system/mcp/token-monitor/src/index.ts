@@ -34,6 +34,7 @@ const MODEL_COSTS: Record<string, { input: number; output: number }> = {
   'claude-sonnet-4.5': { input: 0.003, output: 0.015 },
   'claude-haiku-4.5': { input: 0.0008, output: 0.004 },
   'gemini-3-pro': { input: 0.00125, output: 0.005 },
+  'gemini-2.5-pro': { input: 0.00125, output: 0.005 },
   'gemini-3-flash': { input: 0.0001, output: 0.0004 },
 };
 

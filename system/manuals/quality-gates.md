@@ -1,21 +1,38 @@
-# 품질 게이트
+# Quality Gates
 
-## Gate 1: 코드 품질
-- ESLint 에러 0개
-- TypeScript 에러 0개
-- 미사용 import 없음
+## G1: Code
 
-## Gate 2: 구조 품질
-- 단일 파일 500줄 미만
-- 함수 50줄 미만
-- 중첩 깊이 3단계 미만
+- ESLint errors: 0
+- TypeScript errors: 0
+- No unused imports
 
-## Gate 3: 문서화
-- 모든 export에 JSDoc
-- README 업데이트됨
-- CHANGELOG 업데이트됨
+## G2: Structure
 
-## Gate 4: 보안
-- 하드코딩된 API 키 없음
-- .env 파일 .gitignore에 포함
-- 의존성 취약점 없음
+- File <500 lines
+- Function <50 lines
+- Nesting <3 levels
+
+## G3: Docs
+
+- JSDoc on all exports
+- README updated
+- CHANGELOG updated
+
+## G4: Security
+
+- No hardcoded API keys
+- .env in .gitignore
+- No dependency vulnerabilities
+
+## G5: Assets
+
+**With images:** WebP, ≤500KB each, dist/ ≤5MB
+**No images:** dist/ ≤1MB expected, CSS layers ≥2
+
+## G6: Accessibility
+
+- Semantic HTML
+- Keyboard navigable
+- ARIA attributes
+- Color contrast AA
+- Skip navigation
