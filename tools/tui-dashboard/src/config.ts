@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync as fsExistsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -112,3 +112,63 @@ export const DEFAULT_PHASE_NAMES: Record<number, string> = {
   6: '문서화',
   7: '배포',
 };
+
+/* ── Theme ── */
+
+export interface Theme {
+  name: string;
+  accent: string;
+  border: string;
+  header: string;
+  running: string;
+  success: string;
+  warning: string;
+  error: string;
+  muted: string;
+  text: string;
+}
+
+const DARK_THEME: Theme = {
+  name: 'dark',
+  accent: 'magenta',
+  border: 'magenta',
+  header: 'magenta',
+  running: 'green',
+  success: 'green',
+  warning: 'yellow',
+  error: 'red',
+  muted: 'gray',
+  text: 'white',
+};
+
+const LIGHT_THEME: Theme = {
+  name: 'light',
+  accent: 'blue',
+  border: 'blue',
+  header: 'blue',
+  running: 'green',
+  success: 'green',
+  warning: 'yellow',
+  error: 'red',
+  muted: 'gray',
+  text: 'black',
+};
+
+const THEMES: Record<string, Theme> = { dark: DARK_THEME, light: LIGHT_THEME };
+
+function loadUserConfig(): { theme?: string; sound?: boolean } {
+  try {
+    const configPath = join(DEV_ROOT, 'tools', 'tui-dashboard', 'tui-config.json');
+    if (fsExistsSync(configPath)) {
+      return JSON.parse(readFileSync(configPath, 'utf-8'));
+    }
+  } catch {
+    /* ignore */
+  }
+  return {};
+}
+
+const userConfig = loadUserConfig();
+
+export const THEME: Theme = THEMES[userConfig.theme ?? 'dark'] ?? DARK_THEME;
+export const SOUND_ENABLED: boolean = userConfig.sound ?? false;

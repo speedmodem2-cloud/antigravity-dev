@@ -2,10 +2,11 @@ import React, { useState, useEffect, type ReactNode } from 'react';
 import { Box, Text } from 'ink';
 import Spinner from 'ink-spinner';
 import { formatElapsed } from '../modules/time-format.js';
-import { shortModel, STATUS_ICON, STATUS_COLOR } from '../config.js';
-import type { AgentState, WaveTiming } from '../modules/status-tracker.js';
+import { shortModel, STATUS_ICON, STATUS_COLOR, THEME } from '../config.js';
+import type { AgentState, WaveTiming, AgentEvent } from '../modules/status-tracker.js';
 import type { AgentStatus } from '../config.js';
 import type { SessionInfo } from '../modules/session-tracker.js';
+import type { TokenSummary } from '../modules/token-tracker.js';
 
 /* ── CJK-aware width helpers ── */
 
@@ -65,6 +66,9 @@ interface AgentPanelProps {
   agents: AgentState[];
   session: SessionInfo;
   waveTimings?: Record<string, WaveTiming>;
+  tokenSummary?: TokenSummary;
+  showCompletedWaves?: boolean;
+  agentEvents?: AgentEvent[];
 }
 
 function renderRow(
@@ -107,7 +111,13 @@ function renderAgentRow(agent: AgentState, dots: string): ReactNode {
   const isRunning = agent.status === 'running';
   const isCompleted = agent.isCompleted === true || (agent.status === 'idle' && !isRunning);
   const modelShort = shortModel(agent.model);
-  const taskDisplay = isRunning ? `${agent.currentTask}${dots}` : agent.currentTask;
+  const isError = agent.status === 'stuck';
+  const taskDisplay =
+    isError && agent.errorMessage
+      ? `⚠ ${agent.errorMessage}`
+      : isRunning
+        ? `${agent.currentTask}${dots}`
+        : agent.currentTask;
   const timeDisplay = isPending
     ? 'wait'
     : isOffline
@@ -159,9 +169,14 @@ function renderAgentRow(agent: AgentState, dots: string): ReactNode {
       <Text color="gray" dimColor={dim}>
         {modelCol}
       </Text>
-      <Text color={isRunning ? 'white' : 'gray'} dimColor={dim}>
+      <Text color={isError ? 'red' : isRunning ? 'white' : 'gray'} dimColor={dim} bold={isError}>
         {taskCol}
       </Text>
+      {agent.todoTotal !== null && agent.todoTotal !== undefined && agent.todoTotal > 0 && (
+        <Text color={agent.todoCompleted === agent.todoTotal ? 'green' : 'cyan'} dimColor={dim}>
+          {` ${agent.todoCompleted ?? 0}/${agent.todoTotal}`}
+        </Text>
+      )}
       {extraW > 0 && <Text color="gray">{'    '}</Text>}
       <Text color={dim ? 'gray' : timeColor} dimColor={dim}>
         {timeDisplay}
@@ -170,7 +185,51 @@ function renderAgentRow(agent: AgentState, dots: string): ReactNode {
   );
 }
 
-export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session, waveTimings = {} }) => {
+function formatTokenK(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
+  return n.toString();
+}
+
+function getWaveCost(
+  timing: WaveTiming | undefined,
+  tokenSummary: TokenSummary | undefined,
+): { tokens: number; cost: number } | null {
+  if (!timing?.startedAt || !tokenSummary) return null;
+  const start = new Date(timing.startedAt).getTime();
+  const end = timing.completedAt ? new Date(timing.completedAt).getTime() : Date.now();
+  let tokens = 0;
+  let cost = 0;
+  for (const u of tokenSummary.history) {
+    const t = u.timestamp.getTime();
+    if (t >= start && t <= end) {
+      tokens += u.totalTokens;
+      const rates = tokenSummary.byModel.get(u.model);
+      if (rates && rates.total > 0) {
+        cost += (rates.cost / rates.total) * u.totalTokens;
+      }
+    }
+  }
+  return tokens > 0 ? { tokens, cost } : null;
+}
+
+const EVENT_ICON: Record<string, string> = {
+  new: '◆',
+  running: '▶',
+  idle: '✓',
+  stuck: '✕',
+  pending: '◌',
+  offline: '○',
+};
+
+export const AgentPanel: React.FC<AgentPanelProps> = ({
+  agents,
+  session,
+  waveTimings = {},
+  tokenSummary,
+  showCompletedWaves = false,
+  agentEvents = [],
+}) => {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -212,8 +271,8 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session, waveTim
   });
 
   return (
-    <Box flexDirection="column" borderStyle="round" borderColor="magenta" paddingX={1}>
-      <Text bold color="magenta">
+    <Box flexDirection="column" borderStyle="round" borderColor={THEME.border} paddingX={1}>
+      <Text bold color={THEME.header}>
         에이전트
       </Text>
       {renderRow(
@@ -232,6 +291,17 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session, waveTim
         </Text>
       )}
       {(() => {
+        // Pre-compute wave stats
+        const waveStats = new Map<string, { total: number; completed: number }>();
+        for (const agent of sortedAgents) {
+          const wk = agent.phase !== null && agent.phase !== undefined ? String(agent.phase) : '';
+          if (!wk) continue;
+          const stat = waveStats.get(wk) ?? { total: 0, completed: 0 };
+          stat.total++;
+          if (agent.isCompleted || agent.status === 'idle') stat.completed++;
+          waveStats.set(wk, stat);
+        }
+
         const rows: React.ReactNode[] = [];
         let lastPhase: string | undefined;
         for (const agent of sortedAgents) {
@@ -240,6 +310,7 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session, waveTim
           if (waveKey && waveKey !== lastPhase) {
             const phaseKey = String(agent.phase);
             const timing = waveTimings[phaseKey];
+            const stat = waveStats.get(phaseKey);
             let timeStr = '';
             let timeColor = 'gray';
             if (timing?.startedAt) {
@@ -253,20 +324,40 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session, waveTim
                 timeColor = 'yellow';
               }
             }
-            const label = '─── ' + waveKey + (timeStr ? timeStr + ' ' : ' ');
+
+            // Progress bar
+            let progressStr = '';
+            let progressColor: 'green' | 'yellow' | 'gray' = 'gray';
+            if (stat && stat.total > 0) {
+              const filled = Math.round((stat.completed / stat.total) * 4);
+              const empty = 4 - filled;
+              progressStr =
+                ' ' + '█'.repeat(filled) + '░'.repeat(empty) + ` ${stat.completed}/${stat.total}`;
+              progressColor = stat.completed === stat.total ? 'green' : 'yellow';
+            }
+
+            // Wave cost
+            const waveCost = getWaveCost(timing, tokenSummary);
+            const costStr = waveCost
+              ? ` ${formatTokenK(waveCost.tokens)} $${waveCost.cost.toFixed(2)}`
+              : '';
+
+            const label = '─── ' + waveKey + (timeStr || '') + (progressStr || '') + costStr + ' ';
             const labelLen = label.length + 1;
             rows.push(
               <Box key={`sep-${waveKey}`}>
                 <Text color="gray" dimColor>
                   {'─── ' + waveKey}
                 </Text>
-                {timeStr ? (
-                  <Text color={timeColor as 'green' | 'yellow'}>{timeStr + ' '}</Text>
+                {timeStr ? <Text color={timeColor as 'green' | 'yellow'}>{timeStr}</Text> : null}
+                {progressStr ? (
+                  <Text color={progressColor}>{progressStr}</Text>
                 ) : (
                   <Text color="gray" dimColor>
                     {' '}
                   </Text>
                 )}
+                {costStr ? <Text color="yellow">{costStr + ' '}</Text> : <Text> </Text>}
                 <Text color="gray" dimColor>
                   {'─'.repeat(Math.max(2, sepW - labelLen))}
                 </Text>
@@ -274,14 +365,60 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session, waveTim
             );
             lastPhase = waveKey;
           }
-          rows.push(
-            <React.Fragment key={`agent-${agent.role}-${agent.name}`}>
-              {renderAgentRow(agent, dots)}
-            </React.Fragment>,
-          );
+          // Hide agent rows for completed waves (auto-collapse, toggle with 'w')
+          const agentPhaseKey =
+            agent.phase !== null && agent.phase !== undefined ? String(agent.phase) : '';
+          const agentWaveStat = agentPhaseKey ? waveStats.get(agentPhaseKey) : undefined;
+          const waveFullyDone = agentWaveStat
+            ? agentWaveStat.completed === agentWaveStat.total && agentWaveStat.total > 0
+            : false;
+          if (!waveFullyDone || showCompletedWaves) {
+            rows.push(
+              <React.Fragment key={`agent-${agent.role}`}>
+                {renderAgentRow(agent, dots)}
+              </React.Fragment>,
+            );
+          }
         }
         return rows;
       })()}
+      {agentEvents.length > 0 && (
+        <>
+          <Text color="gray" dimColor>
+            {'─'.repeat(sepW)}
+          </Text>
+          {agentEvents.map((ev, i) => {
+            const timeStr = ev.timestamp.toLocaleTimeString('ko-KR', {
+              hour12: false,
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            });
+            const icon = EVENT_ICON[ev.toStatus] ?? '·';
+            const color =
+              ev.toStatus === 'running'
+                ? 'green'
+                : ev.toStatus === 'idle'
+                  ? 'gray'
+                  : ev.toStatus === 'stuck'
+                    ? 'red'
+                    : 'gray';
+            return (
+              <Box key={`ev-${i}`}>
+                <Text color="gray" dimColor>
+                  {timeStr}{' '}
+                </Text>
+                <Text color={color}>{icon} </Text>
+                <Text color={color}>{ev.agentName.slice(0, 20)}</Text>
+                <Text color="gray" dimColor>
+                  {' '}
+                  {ev.fromStatus}→{ev.toStatus}
+                </Text>
+              </Box>
+            );
+          })}
+        </>
+      )}
     </Box>
   );
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import { shortModel, SHORT_MODEL, modelCost } from '../config.js';
+import { shortModel, SHORT_MODEL, modelCost, THEME } from '../config.js';
 import type { TokenSummary, TokenUsage } from '../modules/token-tracker.js';
 
 interface TokenPanelProps {
@@ -68,6 +68,34 @@ function makeCostSparkline(history: TokenUsage[]): {
   return { line, peakCost, hasCost };
 }
 
+/** Build 12-bucket token volume sparkline */
+function makeTokenSparkline(history: TokenUsage[]): {
+  line: string;
+  peakTokens: number;
+  hasTokens: boolean;
+} {
+  const BUCKETS = 12;
+  const BUCKET_MS = 10 * 60_000;
+  const now = Date.now();
+  const startMs = now - BUCKETS * BUCKET_MS;
+
+  const buckets = new Array<number>(BUCKETS).fill(0);
+  for (const u of history) {
+    const t = u.timestamp.getTime();
+    if (t < startMs) continue;
+    const idx = Math.min(BUCKETS - 1, Math.floor((t - startMs) / BUCKET_MS));
+    buckets[idx]! += u.totalTokens;
+  }
+
+  const peakTokens = Math.max(...buckets);
+  const hasTokens = peakTokens > 0;
+  const BLOCKS = ' ▁▂▃▄▅▆▇█';
+  const line = buckets
+    .map((c) => BLOCKS[peakTokens > 0 ? Math.min(8, Math.round((c / peakTokens) * 8)) : 0])
+    .join('');
+  return { line, peakTokens, hasTokens };
+}
+
 /** Return label width padded for alignment */
 const LABEL_WIDTH = 7;
 const COUNT_WIDTH = 8; // " 167k"
@@ -84,6 +112,7 @@ export const TokenPanel: React.FC<TokenPanelProps> = ({ summary }) => {
   );
 
   const { line: sparkline, peakCost, hasCost } = makeCostSparkline(summary.history);
+  const { line: tokenSparkline, peakTokens, hasTokens } = makeTokenSparkline(summary.history);
 
   // Top 6 sessions by total tokens for the mini list
   const topSessions = Array.from(summary.bySession.entries())
@@ -93,10 +122,10 @@ export const TokenPanel: React.FC<TokenPanelProps> = ({ summary }) => {
   const maxSessionTokens = topSessions.length > 0 ? topSessions[0]![1].total : 1;
 
   return (
-    <Box flexDirection="column" borderStyle="round" borderColor="magenta" paddingX={1}>
+    <Box flexDirection="column" borderStyle="round" borderColor={THEME.border} paddingX={1}>
       {/* Header */}
       <Box gap={2}>
-        <Text bold color="yellow">
+        <Text bold color={THEME.header}>
           토큰 사용량
         </Text>
         <Text>
@@ -142,7 +171,19 @@ export const TokenPanel: React.FC<TokenPanelProps> = ({ summary }) => {
         );
       })}
 
-      {/* Cost sparkline (last 2h, 10-min buckets) */}
+      {/* Token sparkline (last 2h, 10-min buckets) */}
+      {hasTokens && (
+        <Box gap={1} marginTop={0}>
+          <Text color="gray" dimColor>
+            토큰 2h
+          </Text>
+          <Text color="cyan">{tokenSparkline}</Text>
+          <Text color="gray" dimColor>
+            peak {formatNumber(peakTokens)}/10m
+          </Text>
+        </Box>
+      )}
+      {/* Cost sparkline */}
       {hasCost && (
         <Box gap={1} marginTop={0}>
           <Text color="gray" dimColor>

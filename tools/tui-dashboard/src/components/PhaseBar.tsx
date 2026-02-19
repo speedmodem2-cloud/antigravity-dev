@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Box, Text } from 'ink';
 import Spinner from 'ink-spinner';
+import { THEME } from '../config.js';
 import type { PhaseInfo } from '../modules/phase-tracker.js';
 
 interface PhaseBarProps {
@@ -28,8 +29,8 @@ export const PhaseBar: React.FC<PhaseBarProps> = ({ phases, isWaveBased }) => {
   if (phases.length === 0) return null;
 
   return (
-    <Box borderStyle="round" borderColor="magenta" paddingX={1} gap={0}>
-      <Text bold color="magenta">
+    <Box borderStyle="round" borderColor={THEME.border} paddingX={1} gap={0}>
+      <Text bold color={THEME.header}>
         페이즈{' '}
       </Text>
       {phases.map((phase, i) => (

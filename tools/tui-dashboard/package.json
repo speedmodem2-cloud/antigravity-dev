@@ -1,6 +1,6 @@
 {
   "name": "tui-dashboard",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "description": "",
   "type": "module",
   "main": "src/index.tsx",

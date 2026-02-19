@@ -16,6 +16,9 @@ export interface AgentState {
   isCompleted?: boolean;
   changedAt?: Date;
   isNew?: boolean;
+  todoCompleted?: number;
+  todoTotal?: number;
+  errorMessage?: string;
 }
 
 interface RosterEntry {
@@ -31,6 +34,7 @@ interface ActiveAgentEntry {
   model: string;
   task: string;
   status: 'running' | 'idle' | 'completed' | 'error' | 'pending';
+  error?: string;
 }
 
 export interface WaveTiming {
@@ -47,11 +51,19 @@ interface ActiveAgentsFile {
   updatedAt?: string;
 }
 
+export interface AgentEvent {
+  agentName: string;
+  fromStatus: AgentStatus | 'new';
+  toStatus: AgentStatus;
+  timestamp: Date;
+}
+
 export class StatusTracker {
   private agents: Map<string, AgentState> = new Map();
   private waveTimings: Record<string, WaveTiming> = {};
   private pollInterval: ReturnType<typeof setInterval> | null = null;
   private lastContent = '';
+  private events: AgentEvent[] = [];
 
   start(): void {
     this.loadActiveAgents();
@@ -72,6 +84,10 @@ export class StatusTracker {
 
   getWaveTimings(): Record<string, WaveTiming> {
     return this.waveTimings;
+  }
+
+  getRecentEvents(limit = 5): AgentEvent[] {
+    return this.events.slice(-limit);
   }
 
   private loadActiveAgents(): void {
@@ -111,12 +127,22 @@ export class StatusTracker {
             existing.lastActivity = now;
           }
           if (existing.status !== status) {
+            this.events.push({
+              agentName: id,
+              fromStatus: existing.status,
+              toStatus: status,
+              timestamp: now,
+            });
+            if (this.events.length > 50) this.events.splice(0, this.events.length - 50);
             existing.changedAt = now;
           }
           existing.status = status;
+          existing.errorMessage = entry.error;
           existing.isNew = false;
           existing.isCompleted = false;
         } else {
+          this.events.push({ agentName: id, fromStatus: 'new', toStatus: status, timestamp: now });
+          if (this.events.length > 50) this.events.splice(0, this.events.length - 50);
           this.agents.set(id, {
             name: entry.name,
             role: id,
@@ -128,6 +154,7 @@ export class StatusTracker {
             changedAt: now,
             isNew: true,
             isCompleted: false,
+            errorMessage: entry.error,
           });
         }
       }

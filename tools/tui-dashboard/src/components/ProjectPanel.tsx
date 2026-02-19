@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import { readFileSync, existsSync } from 'fs';
-import { PROJECT_STATUS_ICON, PROJECT_STATUS_COLOR } from '../config.js';
+import { PROJECT_STATUS_ICON, PROJECT_STATUS_COLOR, THEME } from '../config.js';
 
 interface Project {
   name: string;
@@ -37,8 +37,8 @@ export const ProjectPanel: React.FC<ProjectPanelProps> = ({ registryPath }) => {
   const visible = [...completed, ...active];
 
   return (
-    <Box flexDirection="column" borderStyle="round" borderColor="magenta" paddingX={1}>
-      <Text bold color="magenta">
+    <Box flexDirection="column" borderStyle="round" borderColor={THEME.border} paddingX={1}>
+      <Text bold color={THEME.header}>
         프로젝트
       </Text>
 

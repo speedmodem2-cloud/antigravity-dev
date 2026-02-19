@@ -11,9 +11,18 @@ import type { LogEntry } from '../modules/log-tracker.js';
 import { StatusTracker } from '../modules/status-tracker.js';
 import { TokenTracker } from '../modules/token-tracker.js';
 import { SessionTracker } from '../modules/session-tracker.js';
+import { SubagentTracker } from '../modules/subagent-tracker.js';
 import { getPhases } from '../modules/phase-tracker.js';
-import { DEV_ROOT, PROJECTS_PATH, TOKEN_LOG_PATH, ACTIVE_AGENTS_PATH, VERSION } from '../config.js';
-import type { AgentState, WaveTiming } from '../modules/status-tracker.js';
+import {
+  DEV_ROOT,
+  PROJECTS_PATH,
+  TOKEN_LOG_PATH,
+  ACTIVE_AGENTS_PATH,
+  VERSION,
+  SOUND_ENABLED,
+  THEME,
+} from '../config.js';
+import type { AgentState, WaveTiming, AgentEvent } from '../modules/status-tracker.js';
 import type { TokenSummary } from '../modules/token-tracker.js';
 import type { PhaseInfo } from '../modules/phase-tracker.js';
 import type { SessionInfo } from '../modules/session-tracker.js';
@@ -114,19 +123,28 @@ export const Dashboard: React.FC = () => {
   const [waveTimings, setWaveTimings] = useState<Record<string, WaveTiming>>({});
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [clock, setClock] = useState(new Date());
+  const [showCompletedWaves, setShowCompletedWaves] = useState(false);
+  const [agentEvents, setAgentEvents] = useState<AgentEvent[]>([]);
+  const [, setColumns] = useState(process.stdout.columns || 80);
+  const [projectAlert, setProjectAlert] = useState<string | null>(null);
+  const lastEventCountRef = useRef(0);
 
   useInput((input) => {
     if (input === 'q') exit();
+    if (input === 'w') setShowCompletedWaves((prev) => !prev);
+    if (input === 'r') setClock(new Date()); // force re-render
   });
 
   useEffect(() => {
     const statusTracker = new StatusTracker();
     const tokenTracker = new TokenTracker();
     const sessionTracker = new SessionTracker();
+    const subagentTracker = new SubagentTracker();
     const logTracker = new LogTracker();
 
     lastProjectRef.current = getActiveProjectName();
     statusTracker.start();
+    subagentTracker.start();
 
     tokenTracker.loadFromFile(TOKEN_LOG_PATH);
     tokenTracker.watchFileForUpdates(TOKEN_LOG_PATH);
@@ -139,16 +157,23 @@ export const Dashboard: React.FC = () => {
       // Detect project change → auto-reset
       const currentProject = getActiveProjectName();
       if (currentProject && currentProject !== lastProjectRef.current) {
+        const prev = lastProjectRef.current;
         lastProjectRef.current = currentProject;
         resetProjectData(currentProject);
         tokenTracker.loadFromFile(TOKEN_LOG_PATH);
+        setProjectAlert(`프로젝트 전환: ${prev ?? '없음'} → ${currentProject}`);
+        setTimeout(() => setProjectAlert(null), 5000);
       }
 
       // Update time window from active-agents.json
       const win = getProjectWindow();
       tokenTracker.setTimeWindow(win.startedAt, win.endedAt);
 
-      setAgents([...statusTracker.getAgents()]);
+      // Merge: StatusTracker (Wave agents) + SubagentTracker (ad-hoc Task calls)
+      const waveAgents = statusTracker.getAgents();
+      const waveRoles = new Set(waveAgents.map((a) => a.name));
+      const adHocAgents = subagentTracker.getSubagents().filter((a) => !waveRoles.has(a.name));
+      setAgents([...waveAgents, ...adHocAgents]);
       setWaveTimings({ ...statusTracker.getWaveTimings() });
 
       if (currentProject) {
@@ -163,6 +188,16 @@ export const Dashboard: React.FC = () => {
 
       setSession(sessionTracker.getSession());
       setLogs(logTracker.getRecentLogs());
+      const newEvents = statusTracker.getRecentEvents(5);
+      setAgentEvents(newEvents);
+      // Sound alert for completion/error events
+      if (SOUND_ENABLED && newEvents.length > lastEventCountRef.current) {
+        const latest = newEvents[newEvents.length - 1];
+        if (latest && (latest.toStatus === 'idle' || latest.toStatus === 'stuck')) {
+          process.stdout.write('\x07'); // BEL
+        }
+      }
+      lastEventCountRef.current = newEvents.length;
       const projPath = getActiveProjectPath();
       setPhases(getPhases(projPath));
       setIsWaveBased(getIsWaveBased());
@@ -171,7 +206,11 @@ export const Dashboard: React.FC = () => {
     }, 2000);
 
     const initialProjPath = getActiveProjectPath();
-    setAgents([...statusTracker.getAgents()]);
+    const initWave = statusTracker.getAgents();
+    const initAdHoc = subagentTracker
+      .getSubagents()
+      .filter((a) => !new Set(initWave.map((w) => w.name)).has(a.name));
+    setAgents([...initWave, ...initAdHoc]);
     setTokenSummary(tokenTracker.getSummary());
     setSession(sessionTracker.getSession());
     setPhases(getPhases(initialProjPath));
@@ -181,7 +220,17 @@ export const Dashboard: React.FC = () => {
     return () => {
       clearInterval(interval);
       statusTracker.stop();
+      subagentTracker.stop();
       tokenTracker.stopWatching();
+    };
+  }, []);
+
+  // Re-render on terminal resize
+  useEffect(() => {
+    const onResize = () => setColumns(process.stdout.columns || 80);
+    process.stdout.on('resize', onResize);
+    return () => {
+      process.stdout.off('resize', onResize);
     };
   }, []);
 
@@ -233,9 +282,16 @@ export const Dashboard: React.FC = () => {
 
   return (
     <Box flexDirection="column" paddingX={1}>
+      {projectAlert && (
+        <Box backgroundColor="yellow" paddingX={1}>
+          <Text color="black" bold>
+            {projectAlert}
+          </Text>
+        </Box>
+      )}
       <Box justifyContent="space-between">
         <Box gap={1}>
-          <Text bold color="magenta">
+          <Text bold color={THEME.header}>
             ◆ AG Dev Dashboard
           </Text>
           <Text color="gray">v{VERSION}</Text>
@@ -244,10 +300,17 @@ export const Dashboard: React.FC = () => {
             {modelLabel}
           </Text>
         </Box>
-        <Text color="gray">{timeStr} | q: exit</Text>
+        <Text color="gray">{timeStr} | w: waves | r: refresh | q: exit</Text>
       </Box>
 
-      <AgentPanel agents={agents} session={session} waveTimings={waveTimings} />
+      <AgentPanel
+        agents={agents}
+        session={session}
+        waveTimings={waveTimings}
+        tokenSummary={tokenSummary}
+        showCompletedWaves={showCompletedWaves}
+        agentEvents={agentEvents}
+      />
       <LogPanel logs={logs} />
       <TokenPanel summary={tokenSummary} />
       {hasProjects && <ProjectPanel registryPath={PROJECTS_PATH} />}
