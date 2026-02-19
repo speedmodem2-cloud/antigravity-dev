@@ -1,6 +1,6 @@
 {
   "name": "tui-dashboard",
-  "version": "1.0.0",
+  "version": "2.3.0",
   "description": "",
   "type": "module",
   "main": "src/index.tsx",
@@ -16,6 +16,11 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.29.3",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
   "dependencies": {
     "ink": "^6.7.0",
     "ink-spinner": "^5.0.0",

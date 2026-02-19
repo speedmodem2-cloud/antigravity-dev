@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import { readFileSync, existsSync } from 'fs';
+import { PROJECT_STATUS_ICON, PROJECT_STATUS_COLOR } from '../config.js';
 
 interface Project {
   name: string;
@@ -25,29 +26,30 @@ export const ProjectPanel: React.FC<ProjectPanelProps> = ({ registryPath }) => {
     try {
       registry = JSON.parse(readFileSync(registryPath, 'utf-8')) as ProjectRegistry;
     } catch {
-      // 파싱 실패 시 기본값 사용
+      // fallback
     }
   }
 
-  return (
-    <Box flexDirection="column" borderStyle="round" borderColor="green" paddingX={1}>
-      <Box marginBottom={1}>
-        <Text bold color="green">
-          프로젝트
-        </Text>
-        <Text color="gray"> (v{registry.version})</Text>
-      </Box>
+  if (registry.projects.length === 0) return null;
 
-      {registry.projects.length === 0 ? (
-        <Text color="gray">등록된 프로젝트 없음. workspace/에 프로젝트를 생성하세요.</Text>
-      ) : (
-        registry.projects.map((p) => (
-          <Box key={p.name} gap={1}>
-            <Text bold>{p.name.padEnd(20)}</Text>
-            <Text color="gray">{p.status}</Text>
-          </Box>
-        ))
-      )}
+  return (
+    <Box flexDirection="column" borderStyle="round" borderColor="magenta" paddingX={1}>
+      <Text bold color="magenta">
+        프로젝트
+      </Text>
+
+      {registry.projects.map((p) => (
+        <Box key={p.name} gap={1}>
+          <Text color={PROJECT_STATUS_COLOR[p.status] ?? 'gray'}>
+            {PROJECT_STATUS_ICON[p.status] ?? '○'}
+          </Text>
+          <Text bold={p.status === 'active'}>{p.name.padEnd(14)}</Text>
+          <Text color={PROJECT_STATUS_COLOR[p.status] ?? 'gray'}>{p.status.padEnd(10)}</Text>
+          <Text color="gray" dimColor>
+            {p.path}
+          </Text>
+        </Box>
+      ))}
     </Box>
   );
 };

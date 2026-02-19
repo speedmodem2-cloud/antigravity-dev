@@ -1,49 +1,61 @@
-import { watch, readFileSync, existsSync } from 'fs';
-import { join } from 'path';
-import { exec } from 'child_process';
+import { readFileSync, existsSync } from 'fs';
+import { ACTIVE_AGENTS_PATH } from '../config.js';
+import type { AgentStatus } from '../config.js';
 
-export type AgentStatus = 'running' | 'idle' | 'stuck' | 'offline';
+export type { AgentStatus };
 
 export interface AgentState {
   name: string;
+  role: string;
+  model: string;
   status: AgentStatus;
   lastActivity: Date;
   currentTask: string;
   logFile: string;
+  phase?: number | string;
+  isCompleted?: boolean;
+  changedAt?: Date;
+  isNew?: boolean;
 }
 
-interface StatusTrackerOptions {
-  logDir: string;
-  stuckThresholdMs: number;
-  onStuck?: (agent: AgentState) => void;
+interface RosterEntry {
+  name: string;
+  model: string;
+  task: string;
+  phase: number | string;
+  status?: 'pending' | 'running' | 'completed' | 'error';
 }
 
-const DEFAULT_OPTIONS: StatusTrackerOptions = {
-  logDir: join(process.env.LOCALAPPDATA ?? '', 'AntiGravity', 'logs'),
-  stuckThresholdMs: 120_000, // 2분
-};
+interface ActiveAgentEntry {
+  name: string;
+  model: string;
+  task: string;
+  status: 'running' | 'idle' | 'completed' | 'error' | 'pending';
+}
+
+interface ActiveAgentsFile {
+  project: string;
+  currentPhase?: number;
+  roster?: RosterEntry[];
+  agents: ActiveAgentEntry[];
+  updatedAt?: string;
+}
 
 export class StatusTracker {
   private agents: Map<string, AgentState> = new Map();
-  private watchers: ReturnType<typeof watch>[] = [];
-  private checkInterval: ReturnType<typeof setInterval> | null = null;
-  private options: StatusTrackerOptions;
-
-  constructor(options?: Partial<StatusTrackerOptions>) {
-    this.options = { ...DEFAULT_OPTIONS, ...options };
-  }
+  private pollInterval: ReturnType<typeof setInterval> | null = null;
+  private lastContent = '';
 
   start(): void {
-    this.scanLogFiles();
-    this.checkInterval = setInterval(() => this.checkStuckAgents(), 10_000);
+    this.loadActiveAgents();
+    // Poll every 2s instead of relying on fs.watch (unreliable on Windows)
+    this.pollInterval = setInterval(() => this.loadActiveAgents(), 2_000);
   }
 
   stop(): void {
-    this.watchers.forEach((w) => w.close());
-    this.watchers = [];
-    if (this.checkInterval) {
-      clearInterval(this.checkInterval);
-      this.checkInterval = null;
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
     }
   }
 
@@ -51,87 +63,109 @@ export class StatusTracker {
     return Array.from(this.agents.values());
   }
 
-  private scanLogFiles(): void {
-    const { logDir } = this.options;
-    if (!existsSync(logDir)) {
-      this.addDemoAgents();
+  private loadActiveAgents(): void {
+    if (!existsSync(ACTIVE_AGENTS_PATH)) {
+      if (this.agents.size > 0) this.agents.clear();
+      this.lastContent = '';
       return;
     }
 
     try {
-      const watcher = watch(logDir, (_event, filename) => {
-        if (filename?.endsWith('.log')) {
-          this.updateAgentFromLog(join(logDir, filename));
+      const raw = readFileSync(ACTIVE_AGENTS_PATH, 'utf-8');
+      // Skip parse if content unchanged
+      if (raw === this.lastContent) return;
+      this.lastContent = raw;
+
+      const data: ActiveAgentsFile = JSON.parse(raw);
+      const current = new Set<string>();
+      const now = new Date();
+
+      // Step 1: process data.agents (active agents take priority)
+      for (const entry of data.agents ?? []) {
+        const id = entry.name;
+        current.add(id);
+
+        const status: AgentStatus =
+          entry.status === 'running' ? 'running' : entry.status === 'error' ? 'stuck' : 'idle';
+
+        const existing = this.agents.get(id);
+        if (existing) {
+          existing.model = entry.model;
+          existing.currentTask = entry.task;
+          // If transitioning from running → completed, stamp lastActivity
+          if (existing.status === 'running' && status !== 'running') {
+            existing.lastActivity = now;
+          } else if (status === 'running') {
+            existing.lastActivity = now;
+          }
+          if (existing.status !== status) {
+            existing.changedAt = now;
+          }
+          existing.status = status;
+          existing.isNew = false;
+          existing.isCompleted = false;
+        } else {
+          this.agents.set(id, {
+            name: entry.name,
+            role: id,
+            model: entry.model,
+            status,
+            lastActivity: now,
+            currentTask: entry.task,
+            logFile: '',
+            changedAt: now,
+            isNew: true,
+            isCompleted: false,
+          });
         }
-      });
-      this.watchers.push(watcher);
-    } catch {
-      this.addDemoAgents();
-    }
-  }
-
-  private addDemoAgents(): void {
-    const now = new Date();
-    this.agents.set('main', {
-      name: 'Main Agent',
-      status: 'running',
-      lastActivity: now,
-      currentTask: 'PHASE 03 구현 중',
-      logFile: 'demo',
-    });
-    this.agents.set('sub-1', {
-      name: 'Sub Agent 1',
-      status: 'idle',
-      lastActivity: new Date(now.getTime() - 30_000),
-      currentTask: '대기 중',
-      logFile: 'demo',
-    });
-    this.agents.set('sub-2', {
-      name: 'Sub Agent 2',
-      status: 'idle',
-      lastActivity: new Date(now.getTime() - 60_000),
-      currentTask: '대기 중',
-      logFile: 'demo',
-    });
-  }
-
-  private updateAgentFromLog(logPath: string): void {
-    try {
-      const content = readFileSync(logPath, 'utf-8');
-      const lines = content.split('\n').filter(Boolean);
-      const lastLine = lines[lines.length - 1] ?? '';
-      const agentName = logPath.split(/[\\/]/).pop()?.replace('.log', '') ?? 'unknown';
-
-      this.agents.set(agentName, {
-        name: agentName,
-        status: 'running',
-        lastActivity: new Date(),
-        currentTask: lastLine.slice(0, 50),
-        logFile: logPath,
-      });
-    } catch {
-      // 파일 접근 실패 시 무시
-    }
-  }
-
-  private checkStuckAgents(): void {
-    const now = Date.now();
-    for (const agent of this.agents.values()) {
-      const elapsed = now - agent.lastActivity.getTime();
-      if (agent.status === 'running' && elapsed > this.options.stuckThresholdMs) {
-        agent.status = 'stuck';
-        this.options.onStuck?.(agent);
-        this.sendNotification(agent);
       }
-    }
-  }
 
-  private sendNotification(agent: AgentState): void {
-    if (process.platform === 'win32') {
-      const msg = `에이전트 "${agent.name}" 이(가) ${Math.round((Date.now() - agent.lastActivity.getTime()) / 1000)}초 동안 응답 없음`;
-      exec(
-        `powershell.exe -Command "New-BurntToastNotification -Text 'AG Dashboard', '${msg}'" 2>nul`,
-      );
+      // Step 2: process roster — agents not yet in current set
+      const rosterList = data.roster ?? [];
+      for (const r of rosterList) {
+        const id = r.name;
+        if (current.has(id)) continue; // active agent takes priority
+
+        const rosterStatus: AgentStatus =
+          r.status === 'running' ? 'running' : r.status === 'completed' ? 'idle' : 'pending';
+
+        const isCompleted = r.status === 'completed';
+
+        const existing = this.agents.get(id);
+        if (existing) {
+          // Update phase/completed from roster if not overridden by active
+          existing.phase = r.phase;
+          existing.isCompleted = isCompleted;
+          if (existing.status !== rosterStatus) {
+            existing.status = rosterStatus;
+            existing.changedAt = now;
+          }
+        } else {
+          this.agents.set(id, {
+            name: r.name,
+            role: id,
+            model: r.model,
+            status: rosterStatus,
+            lastActivity: now,
+            currentTask: r.task,
+            logFile: '',
+            phase: r.phase,
+            isCompleted,
+            changedAt: now,
+            isNew: false,
+          });
+        }
+      }
+
+      // Step 3: remove agents not in current (active) or roster
+      const rosterNames = new Set(rosterList.map((r) => r.name));
+      for (const key of this.agents.keys()) {
+        if (!current.has(key) && !rosterNames.has(key)) {
+          this.agents.delete(key);
+        }
+      }
+    } catch {
+      // ignore parse errors
     }
   }
 }

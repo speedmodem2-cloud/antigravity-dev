@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Text } from 'ink';
+import { shortModel, SHORT_MODEL } from '../config.js';
 import type { TokenSummary } from '../modules/token-tracker.js';
 
 interface TokenPanelProps {
@@ -8,66 +9,136 @@ interface TokenPanelProps {
 
 function formatNumber(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
   return n.toString();
 }
 
 function makeBar(value: number, max: number, width: number): string {
-  const filled = max > 0 ? Math.round((value / max) * width) : 0;
+  if (max <= 0 || width <= 0) return '░'.repeat(width);
+  const filled = Math.min(Math.round((value / max) * width), width);
   return '█'.repeat(filled) + '░'.repeat(width - filled);
 }
+
+/** Render a two-tone bar: input=█ output=▓ */
+function makeSplitBar(input: number, output: number, max: number, width: number): string {
+  if (max <= 0 || width <= 0) return '░'.repeat(width);
+  const total = input + output;
+  const totalFilled = Math.min(Math.round((total / max) * width), width);
+  const inputFilled = Math.min(Math.round((input / max) * width), totalFilled);
+  const outputFilled = totalFilled - inputFilled;
+  return '█'.repeat(inputFilled) + '▓'.repeat(outputFilled) + '░'.repeat(width - totalFilled);
+}
+
+/** Return model color: magenta for Opus, cyan for Sonnet/others */
+function modelColor(model: string): string {
+  const name = (SHORT_MODEL[model] ?? model).toLowerCase();
+  if (name.startsWith('opus')) return 'magenta';
+  if (name.startsWith('son')) return 'cyan';
+  if (name.startsWith('hai')) return 'blue';
+  if (name.startsWith('gem')) return 'green';
+  return 'cyan';
+}
+
+/** Return label width padded for alignment */
+const LABEL_WIDTH = 7;
+const COUNT_WIDTH = 8; // " 167k"
+const DETAIL_WIDTH = 20; // " (in:95k out:72k)"
+const BAR_MIN = 8; // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export const TokenPanel: React.FC<TokenPanelProps> = ({ summary }) => {
   const maxModelTokens = Math.max(...Array.from(summary.byModel.values()).map((m) => m.total), 1);
 
+  // Bar width: keep it at a fixed comfortable size (terminal width is unknown in ink without useStdout)
+  const BAR_WIDTH = 20;
+
+  // Top 6 sessions by total tokens for the mini list
+  const topSessions = Array.from(summary.bySession.entries())
+    .sort((a, b) => b[1].total - a[1].total)
+    .slice(0, 6);
+
+  const maxSessionTokens = topSessions.length > 0 ? topSessions[0]![1].total : 1;
+
   return (
-    <Box flexDirection="column" borderStyle="round" borderColor="yellow" paddingX={1}>
-      <Box marginBottom={1}>
+    <Box flexDirection="column" borderStyle="round" borderColor="magenta" paddingX={1}>
+      {/* Header */}
+      <Box gap={2}>
         <Text bold color="yellow">
           토큰 사용량
         </Text>
+        <Text>
+          <Text bold>{formatNumber(summary.totalTokens)}</Text>
+          <Text color="gray">
+            {' '}
+            (in:{formatNumber(summary.totalInput)} out:{formatNumber(summary.totalOutput)})
+          </Text>
+        </Text>
+        <Text color="yellow" bold>
+          ${summary.costEstimate.toFixed(2)}
+        </Text>
+        {summary.isDemo && (
+          <Text color="red" dimColor>
+            [DEMO]
+          </Text>
+        )}
       </Box>
 
-      {/* 총 사용량 */}
-      <Box gap={2} marginBottom={1}>
-        <Box flexDirection="column">
-          <Text color="gray">입력</Text>
-          <Text bold color="green">
-            {formatNumber(summary.totalInput)}
-          </Text>
-        </Box>
-        <Box flexDirection="column">
-          <Text color="gray">출력</Text>
-          <Text bold color="blue">
-            {formatNumber(summary.totalOutput)}
-          </Text>
-        </Box>
-        <Box flexDirection="column">
-          <Text color="gray">합계</Text>
-          <Text bold color="white">
-            {formatNumber(summary.totalTokens)}
-          </Text>
-        </Box>
-        <Box flexDirection="column">
-          <Text color="gray">예상 비용</Text>
-          <Text bold color="yellow">
-            ${summary.costEstimate.toFixed(2)}
-          </Text>
-        </Box>
-      </Box>
-
-      {/* 모델별 */}
-      <Text color="gray" dimColor>
-        모델별 사용량:
+      {/* Divider */}
+      <Text color="gray">
+        {'─'.repeat(LABEL_WIDTH + BAR_WIDTH + COUNT_WIDTH + DETAIL_WIDTH + 4)}
       </Text>
-      {Array.from(summary.byModel.entries()).map(([model, data]) => (
-        <Box key={model} gap={1}>
-          <Text>{model.padEnd(20)}</Text>
-          <Text color="cyan">{makeBar(data.total, maxModelTokens, 15)}</Text>
-          <Text color="gray">{formatNumber(data.total).padStart(6)}</Text>
-          <Text color="yellow">${data.cost.toFixed(2)}</Text>
-        </Box>
-      ))}
+
+      {/* Model bars */}
+      {Array.from(summary.byModel.entries()).map(([model, data]) => {
+        const delta = summary.deltas.get(model);
+        const deltaStr = delta && delta.totalDelta > 0 ? ` +${formatNumber(delta.totalDelta)}` : '';
+        const modelName = shortModel(model);
+        const color = modelColor(model);
+        const bar = makeSplitBar(data.input, data.output, maxModelTokens, BAR_WIDTH);
+
+        return (
+          <Box key={model} gap={1}>
+            <Text dimColor>{modelName.padEnd(LABEL_WIDTH)}</Text>
+            <Text color={color}>{bar}</Text>
+            <Text bold>{formatNumber(data.total).padStart(5)}</Text>
+            <Text color="gray">
+              {' '}
+              (in:{formatNumber(data.input)} out:{formatNumber(data.output)})
+            </Text>
+            {deltaStr ? <Text color="green">{deltaStr}</Text> : null}
+            <Text color="yellow"> ${data.cost.toFixed(2)}</Text>
+          </Box>
+        );
+      })}
+
+      {/* Divider */}
+      <Text color="gray">
+        {'─'.repeat(LABEL_WIDTH + BAR_WIDTH + COUNT_WIDTH + DETAIL_WIDTH + 4)}
+      </Text>
+      <Box gap={1}>
+        <Text dimColor>{'Total'.padEnd(LABEL_WIDTH)}</Text>
+        <Text bold>{formatNumber(summary.totalTokens)}</Text>
+        <Text color="gray"> tokens</Text>
+      </Box>
+
+      {/* Agent session mini list */}
+      {topSessions.length > 0 && (
+        <>
+          <Text> </Text>
+          <Text bold color="gray">
+            에이전트 세션
+          </Text>
+          {topSessions.map(([sessionId, data]) => {
+            const miniBar = makeBar(data.total, maxSessionTokens, 10);
+            return (
+              <Box key={sessionId} gap={1}>
+                <Text dimColor>{'  ' + sessionId.slice(0, 14).padEnd(14)}</Text>
+                <Text>{formatNumber(data.total).padStart(5)}</Text>
+                <Text color="magenta">{miniBar}</Text>
+              </Box>
+            );
+          })}
+        </>
+      )}
     </Box>
   );
 };

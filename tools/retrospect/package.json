@@ -8,6 +8,7 @@
     "analyze": "tsx src/index.ts analyze"
   },
   "devDependencies": {
+    "@types/node": "^25.2.3",
     "tsx": "^4.19.0",
     "typescript": "^5.9.0"
   }
