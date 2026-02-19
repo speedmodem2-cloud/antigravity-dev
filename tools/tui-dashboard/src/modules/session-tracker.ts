@@ -57,7 +57,9 @@ function detectSessionModel(): string {
     }
     if (!latestFile) return '';
     const content = readFileSync(latestFile, 'utf-8');
-    for (const line of content.split('\n')) {
+    // Read from end to get the most recent model used
+    const lines = content.split('\n').reverse();
+    for (const line of lines) {
       if (!line.trim()) continue;
       try {
         const obj = JSON.parse(line);

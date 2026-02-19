@@ -216,13 +216,34 @@ export const Dashboard: React.FC = () => {
   }
 
   const timeStr = clock.toLocaleTimeString('ko-KR', { hour12: false });
+  const modelLabel = session.model
+    ? session.model.includes('opus')
+      ? 'Opus'
+      : session.model.includes('sonnet')
+        ? 'Sonnet'
+        : session.model.includes('haiku')
+          ? 'Haiku'
+          : session.model.replace('claude-', '').slice(0, 6)
+    : 'Sonnet';
+  const modelColor = session.model?.includes('opus')
+    ? ('magenta' as const)
+    : session.model?.includes('haiku')
+      ? ('blue' as const)
+      : ('cyan' as const);
 
   return (
     <Box flexDirection="column" paddingX={1}>
       <Box justifyContent="space-between">
-        <Text bold color="magenta">
-          ◆ AG Dev Dashboard <Text color="gray">v{VERSION}</Text>
-        </Text>
+        <Box gap={1}>
+          <Text bold color="magenta">
+            ◆ AG Dev Dashboard
+          </Text>
+          <Text color="gray">v{VERSION}</Text>
+          <Text color="gray">|</Text>
+          <Text bold color={modelColor}>
+            {modelLabel}
+          </Text>
+        </Box>
         <Text color="gray">{timeStr} | q: exit</Text>
       </Box>
 
