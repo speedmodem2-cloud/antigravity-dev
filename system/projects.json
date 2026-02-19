@@ -1,5 +1,55 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-02-16",
-  "projects": []
+  "lastUpdated": "2026-02-18",
+  "projects": [
+    {
+      "name": "portfolio1",
+      "status": "completed",
+      "path": "workspace/portfolio1",
+      "startedAt": "2026-02-17",
+      "completedAt": "2026-02-17",
+      "design": "synthwave"
+    },
+    {
+      "name": "portfolio2",
+      "status": "completed",
+      "path": "workspace/portfolio2",
+      "startedAt": "2026-02-18",
+      "completedAt": "2026-02-18",
+      "design": "brutalist"
+    },
+    {
+      "name": "portfolio3",
+      "status": "completed",
+      "path": "workspace/portfolio3",
+      "startedAt": "2026-02-18",
+      "completedAt": "2026-02-18"
+    },
+    {
+      "name": "shop-backend1",
+      "status": "completed",
+      "path": "workspace/shop-backend1",
+      "startedAt": "2026-02-18",
+      "completedAt": "2026-02-18",
+      "stack": "NestJS + MySQL + Docker"
+    },
+    {
+      "name": "shop-backend2",
+      "status": "completed",
+      "path": "workspace/shop-backend2",
+      "startedAt": "2026-02-18",
+      "completedAt": "2026-02-19",
+      "stack": "NestJS + MySQL + Redis + WebSocket + Docker"
+    },
+    {
+      "name": "shop-backend2-1",
+      "status": "completed",
+      "path": "workspace/shop-backend2-1",
+      "startedAt": "2026-02-19",
+      "completedAt": "2026-02-19",
+      "stack": "NestJS + MySQL + Redis + WebSocket + Docker",
+      "note": "Wave 병렬 방식 재구현 — 최대 4개 동시 에이전트. 유닛 19+E2E 13 all pass."
+    }
+  ],
+  "lastUpdated": "2026-02-19"
 }

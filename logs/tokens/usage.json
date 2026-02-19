@@ -1,0 +1,13 @@
+{
+  "records": [
+    {
+      "timestamp": "2026-02-19T05:35:14.235Z",
+      "model": "claude-sonnet-4-6",
+      "inputTokens": 59267005,
+      "outputTokens": 6804,
+      "cost": 0,
+      "session": "8575d902-d3ec-4893-a021-913e8fdf605f"
+    }
+  ],
+  "updatedAt": "2026-02-19T12:00:00.000Z"
+}

@@ -1,0 +1,8 @@
+{
+  "project": "shop-backend2-1",
+  "currentPhase": 0,
+  "completedPhases": [],
+  "totalPhases": 5,
+  "phaseNames": ["사전준비", "코어모듈(W2)", "실시간(W3)", "고급+테스트(W4)", "배포+문서(W5)"],
+  "updatedAt": "2026-02-19T12:00:00.000Z"
+}
