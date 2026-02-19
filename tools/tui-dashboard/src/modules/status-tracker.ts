@@ -33,16 +33,23 @@ interface ActiveAgentEntry {
   status: 'running' | 'idle' | 'completed' | 'error' | 'pending';
 }
 
+export interface WaveTiming {
+  startedAt: string;
+  completedAt?: string;
+}
+
 interface ActiveAgentsFile {
   project: string;
   currentPhase?: number;
   roster?: RosterEntry[];
   agents: ActiveAgentEntry[];
+  waveTimings?: Record<string, WaveTiming>;
   updatedAt?: string;
 }
 
 export class StatusTracker {
   private agents: Map<string, AgentState> = new Map();
+  private waveTimings: Record<string, WaveTiming> = {};
   private pollInterval: ReturnType<typeof setInterval> | null = null;
   private lastContent = '';
 
@@ -63,6 +70,10 @@ export class StatusTracker {
     return Array.from(this.agents.values());
   }
 
+  getWaveTimings(): Record<string, WaveTiming> {
+    return this.waveTimings;
+  }
+
   private loadActiveAgents(): void {
     if (!existsSync(ACTIVE_AGENTS_PATH)) {
       if (this.agents.size > 0) this.agents.clear();
@@ -77,6 +88,7 @@ export class StatusTracker {
       this.lastContent = raw;
 
       const data: ActiveAgentsFile = JSON.parse(raw);
+      this.waveTimings = data.waveTimings ?? {};
       const current = new Set<string>();
       const now = new Date();
 

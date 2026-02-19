@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import { shortModel, SHORT_MODEL } from '../config.js';
-import type { TokenSummary } from '../modules/token-tracker.js';
+import { shortModel, SHORT_MODEL, modelCost } from '../config.js';
+import type { TokenSummary, TokenUsage } from '../modules/token-tracker.js';
 
 interface TokenPanelProps {
   summary: TokenSummary;
@@ -39,6 +39,35 @@ function modelColor(model: string): string {
   return 'cyan';
 }
 
+/** Build 12-bucket (10-min each = last 2h) cost sparkline from usage history */
+function makeCostSparkline(history: TokenUsage[]): {
+  line: string;
+  peakCost: number;
+  hasCost: boolean;
+} {
+  const BUCKETS = 12;
+  const BUCKET_MS = 10 * 60_000; // 10 minutes
+  const now = Date.now();
+  const startMs = now - BUCKETS * BUCKET_MS;
+
+  const buckets = new Array<number>(BUCKETS).fill(0);
+  for (const u of history) {
+    const t = u.timestamp.getTime();
+    if (t < startMs) continue;
+    const idx = Math.min(BUCKETS - 1, Math.floor((t - startMs) / BUCKET_MS));
+    const rates = modelCost(u.model);
+    buckets[idx]! += u.inputTokens * rates.input + u.outputTokens * rates.output;
+  }
+
+  const peakCost = Math.max(...buckets);
+  const hasCost = peakCost > 0;
+  const BLOCKS = ' ▁▂▃▄▅▆▇█';
+  const line = buckets
+    .map((c) => BLOCKS[peakCost > 0 ? Math.min(8, Math.round((c / peakCost) * 8)) : 0])
+    .join('');
+  return { line, peakCost, hasCost };
+}
+
 /** Return label width padded for alignment */
 const LABEL_WIDTH = 7;
 const COUNT_WIDTH = 8; // " 167k"
@@ -47,8 +76,14 @@ const DETAIL_WIDTH = 20; // " (in:95k out:72k)"
 export const TokenPanel: React.FC<TokenPanelProps> = ({ summary }) => {
   const maxModelTokens = Math.max(...Array.from(summary.byModel.values()).map((m) => m.total), 1);
 
-  // Bar width: keep it at a fixed comfortable size (terminal width is unknown in ink without useStdout)
-  const BAR_WIDTH = 20;
+  const cols = process.stdout.columns || 80;
+  const BAR_WIDTH = cols < 55 ? 12 : 20;
+  const DIVIDER_WIDTH = Math.min(
+    cols - 4,
+    LABEL_WIDTH + BAR_WIDTH + COUNT_WIDTH + DETAIL_WIDTH + 4,
+  );
+
+  const { line: sparkline, peakCost, hasCost } = makeCostSparkline(summary.history);
 
   // Top 6 sessions by total tokens for the mini list
   const topSessions = Array.from(summary.bySession.entries())
@@ -82,9 +117,7 @@ export const TokenPanel: React.FC<TokenPanelProps> = ({ summary }) => {
       </Box>
 
       {/* Divider */}
-      <Text color="gray">
-        {'─'.repeat(LABEL_WIDTH + BAR_WIDTH + COUNT_WIDTH + DETAIL_WIDTH + 4)}
-      </Text>
+      <Text color="gray">{'─'.repeat(DIVIDER_WIDTH)}</Text>
 
       {/* Model bars */}
       {Array.from(summary.byModel.entries()).map(([model, data]) => {
@@ -109,10 +142,21 @@ export const TokenPanel: React.FC<TokenPanelProps> = ({ summary }) => {
         );
       })}
 
+      {/* Cost sparkline (last 2h, 10-min buckets) */}
+      {hasCost && (
+        <Box gap={1} marginTop={0}>
+          <Text color="gray" dimColor>
+            비용 2h
+          </Text>
+          <Text color="yellow">{sparkline}</Text>
+          <Text color="gray" dimColor>
+            peak ${peakCost.toFixed(3)}/10m
+          </Text>
+        </Box>
+      )}
+
       {/* Divider */}
-      <Text color="gray">
-        {'─'.repeat(LABEL_WIDTH + BAR_WIDTH + COUNT_WIDTH + DETAIL_WIDTH + 4)}
-      </Text>
+      <Text color="gray">{'─'.repeat(DIVIDER_WIDTH)}</Text>
       <Box gap={1}>
         <Text dimColor>{'Total'.padEnd(LABEL_WIDTH)}</Text>
         <Text bold>{formatNumber(summary.totalTokens)}</Text>

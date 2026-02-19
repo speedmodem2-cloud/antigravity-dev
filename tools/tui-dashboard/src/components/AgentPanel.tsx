@@ -3,7 +3,7 @@ import { Box, Text } from 'ink';
 import Spinner from 'ink-spinner';
 import { formatElapsed } from '../modules/time-format.js';
 import { shortModel, STATUS_ICON, STATUS_COLOR } from '../config.js';
-import type { AgentState } from '../modules/status-tracker.js';
+import type { AgentState, WaveTiming } from '../modules/status-tracker.js';
 import type { AgentStatus } from '../config.js';
 import type { SessionInfo } from '../modules/session-tracker.js';
 
@@ -45,11 +45,26 @@ function padW(str: string, target: number): string {
   return gap > 0 ? str + ' '.repeat(gap) : str;
 }
 
+/* ── Layout helpers ── */
+
+function getLayout() {
+  const cols = process.stdout.columns || 80;
+  // reserved: border(2) + paddingX(2) + icon(1) + space(1) + elapsed(4) = 10
+  const available = Math.max(20, cols - 10);
+  const nameW = cols < 55 ? 9 : 13;
+  const modelW = 4;
+  const extraW = cols < 55 ? 0 : 4;
+  const taskW = Math.max(10, available - nameW - modelW - extraW - 4);
+  const sepW = Math.max(5, cols - 6);
+  return { nameW, modelW, extraW, taskW, sepW, cols };
+}
+
 /* ── Component ── */
 
 interface AgentPanelProps {
   agents: AgentState[];
   session: SessionInfo;
+  waveTimings?: Record<string, WaveTiming>;
 }
 
 function renderRow(
@@ -62,10 +77,11 @@ function renderRow(
   elapsedColor: string,
   isActive: boolean,
 ): ReactNode {
-  const nameCol = padW(sliceW(name, 14), 15);
-  const modelCol = padW(model, 5);
-  const taskCol = padW(sliceW(task, 22), 22);
-  const extraCol = extra ? padW(extra, 4) : '    ';
+  const { nameW, modelW, extraW, taskW } = getLayout();
+  const nameCol = padW(sliceW(name, nameW), nameW + 1);
+  const modelCol = padW(sliceW(model, modelW), modelW + 1);
+  const taskCol = padW(sliceW(task, taskW), taskW);
+  const extraCol = extraW > 0 ? (extra ? padW(extra, extraW) : ' '.repeat(extraW)) + ' ' : '';
 
   return (
     <Box>
@@ -84,6 +100,7 @@ function renderRow(
 }
 
 function renderAgentRow(agent: AgentState, dots: string): ReactNode {
+  const { nameW, modelW, extraW, taskW } = getLayout();
   const elapsedMs = Date.now() - agent.lastActivity.getTime();
   const isPending = agent.status === 'pending';
   const isOffline = agent.status === 'offline';
@@ -127,9 +144,9 @@ function renderAgentRow(agent: AgentState, dots: string): ReactNode {
     </Text>
   );
 
-  const nameCol = padW(sliceW(agent.name, 14), 15);
-  const modelCol = padW(modelShort, 5);
-  const taskCol = padW(sliceW(taskDisplay, 22), 22);
+  const nameCol = padW(sliceW(agent.name, nameW), nameW + 1);
+  const modelCol = padW(sliceW(modelShort, modelW), modelW + 1);
+  const taskCol = padW(sliceW(taskDisplay, taskW), taskW);
 
   const dim = isPending || isCompleted;
 
@@ -145,7 +162,7 @@ function renderAgentRow(agent: AgentState, dots: string): ReactNode {
       <Text color={isRunning ? 'white' : 'gray'} dimColor={dim}>
         {taskCol}
       </Text>
-      <Text color="gray">{'    '}</Text>
+      {extraW > 0 && <Text color="gray">{'    '}</Text>}
       <Text color={dim ? 'gray' : timeColor} dimColor={dim}>
         {timeDisplay}
       </Text>
@@ -153,7 +170,7 @@ function renderAgentRow(agent: AgentState, dots: string): ReactNode {
   );
 }
 
-export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session }) => {
+export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session, waveTimings = {} }) => {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -162,6 +179,7 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session }) => {
   }, []);
 
   const dots = (['', '.', '..', '...'] as const)[tick as 0 | 1 | 2 | 3];
+  const { sepW } = getLayout();
 
   const tagPrefix = session.phaseTag ? `${session.phaseTag} ` : '';
   const taskBase = session.currentTask !== '-' ? session.currentTask : 'No active task';
@@ -187,7 +205,6 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session }) => {
     <Text color="gray">{hasAnyAgents || session.totalCount > 0 ? '○' : '✕'}</Text>
   );
 
-  // Sort by phase number, then ungrouped at end
   const sortedAgents = [...agents].sort((a, b) => {
     const na = a.phase !== null && a.phase !== undefined ? parseFloat(String(a.phase)) : Infinity;
     const nb = b.phase !== null && b.phase !== undefined ? parseFloat(String(b.phase)) : Infinity;
@@ -211,7 +228,7 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session }) => {
       )}
       {agents.length > 0 && (
         <Text color="gray" dimColor>
-          {'─'.repeat(46)}
+          {'─'.repeat(sepW)}
         </Text>
       )}
       {(() => {
@@ -221,10 +238,39 @@ export const AgentPanel: React.FC<AgentPanelProps> = ({ agents, session }) => {
           const waveKey =
             agent.phase !== null && agent.phase !== undefined ? `W${agent.phase}` : '';
           if (waveKey && waveKey !== lastPhase) {
+            const phaseKey = String(agent.phase);
+            const timing = waveTimings[phaseKey];
+            let timeStr = '';
+            let timeColor = 'gray';
+            if (timing?.startedAt) {
+              const startMs = new Date(timing.startedAt).getTime();
+              if (timing.completedAt) {
+                const dur = new Date(timing.completedAt).getTime() - startMs;
+                timeStr = ` ✓ ${formatElapsed(dur)}`;
+                timeColor = 'green';
+              } else {
+                timeStr = ` ${formatElapsed(Date.now() - startMs)}`;
+                timeColor = 'yellow';
+              }
+            }
+            const label = '─── ' + waveKey + (timeStr ? timeStr + ' ' : ' ');
+            const labelLen = label.length + 1;
             rows.push(
-              <Text key={`sep-${waveKey}`} color="gray" dimColor>
-                {'─── ' + waveKey + ' ' + '─'.repeat(38)}
-              </Text>,
+              <Box key={`sep-${waveKey}`}>
+                <Text color="gray" dimColor>
+                  {'─── ' + waveKey}
+                </Text>
+                {timeStr ? (
+                  <Text color={timeColor as 'green' | 'yellow'}>{timeStr + ' '}</Text>
+                ) : (
+                  <Text color="gray" dimColor>
+                    {' '}
+                  </Text>
+                )}
+                <Text color="gray" dimColor>
+                  {'─'.repeat(Math.max(2, sepW - labelLen))}
+                </Text>
+              </Box>,
             );
             lastPhase = waveKey;
           }

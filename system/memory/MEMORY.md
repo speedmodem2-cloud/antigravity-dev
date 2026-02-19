@@ -45,6 +45,7 @@
 
 - **Phase 0**: `Task(model:"opus")` → 아키텍처 설계 + Wave 계획 + 인터페이스 계약 반환
 - **Wave dispatch**: 의존성 그래프 기준 Wave 구성. 파일 충돌 없는 태스크 동시 실행. 최대 4개/Wave.
+- **Wave 타이밍**: Wave 시작 시 `waveTimings.N.startedAt = now`, 완료 시 `waveTimings.N.completedAt = now` → active-agents.json에 기록
 - `app.module.ts` 등 통합 파일은 Wave 완료 후 오케스트레이터 직접 처리.
 - **에이전트 범위 명시 필수**: 프롬프트에 "이 모듈만, app.module.ts 수정 금지" 명시
 - **커밋**: 5파일 이하, 모듈당 1커밋

@@ -5,12 +5,15 @@ import { AgentPanel } from './AgentPanel.js';
 import { TokenPanel } from './TokenPanel.js';
 import { ProjectPanel } from './ProjectPanel.js';
 import { PhaseBar } from './PhaseBar.js';
+import { LogPanel } from './LogPanel.js';
+import { LogTracker } from '../modules/log-tracker.js';
+import type { LogEntry } from '../modules/log-tracker.js';
 import { StatusTracker } from '../modules/status-tracker.js';
 import { TokenTracker } from '../modules/token-tracker.js';
 import { SessionTracker } from '../modules/session-tracker.js';
 import { getPhases } from '../modules/phase-tracker.js';
 import { DEV_ROOT, PROJECTS_PATH, TOKEN_LOG_PATH, ACTIVE_AGENTS_PATH, VERSION } from '../config.js';
-import type { AgentState } from '../modules/status-tracker.js';
+import type { AgentState, WaveTiming } from '../modules/status-tracker.js';
 import type { TokenSummary } from '../modules/token-tracker.js';
 import type { PhaseInfo } from '../modules/phase-tracker.js';
 import type { SessionInfo } from '../modules/session-tracker.js';
@@ -108,6 +111,8 @@ export const Dashboard: React.FC = () => {
   });
   const [hasProjects, setHasProjects] = useState(false);
   const [isWaveBased, setIsWaveBased] = useState(false);
+  const [waveTimings, setWaveTimings] = useState<Record<string, WaveTiming>>({});
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [clock, setClock] = useState(new Date());
 
   useInput((input) => {
@@ -118,6 +123,7 @@ export const Dashboard: React.FC = () => {
     const statusTracker = new StatusTracker();
     const tokenTracker = new TokenTracker();
     const sessionTracker = new SessionTracker();
+    const logTracker = new LogTracker();
 
     lastProjectRef.current = getActiveProjectName();
     statusTracker.start();
@@ -143,6 +149,7 @@ export const Dashboard: React.FC = () => {
       tokenTracker.setTimeWindow(win.startedAt, win.endedAt);
 
       setAgents([...statusTracker.getAgents()]);
+      setWaveTimings({ ...statusTracker.getWaveTimings() });
 
       if (currentProject) {
         // Active project → normal update
@@ -155,6 +162,7 @@ export const Dashboard: React.FC = () => {
       }
 
       setSession(sessionTracker.getSession());
+      setLogs(logTracker.getRecentLogs());
       const projPath = getActiveProjectPath();
       setPhases(getPhases(projPath));
       setIsWaveBased(getIsWaveBased());
@@ -218,7 +226,8 @@ export const Dashboard: React.FC = () => {
         <Text color="gray">{timeStr} | q: exit</Text>
       </Box>
 
-      <AgentPanel agents={agents} session={session} />
+      <AgentPanel agents={agents} session={session} waveTimings={waveTimings} />
+      <LogPanel logs={logs} />
       <TokenPanel summary={tokenSummary} />
       {hasProjects && <ProjectPanel registryPath={PROJECTS_PATH} />}
       <PhaseBar phases={phases} isWaveBased={isWaveBased} />

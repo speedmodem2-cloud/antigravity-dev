@@ -32,22 +32,23 @@ export const ProjectPanel: React.FC<ProjectPanelProps> = ({ registryPath }) => {
 
   if (registry.projects.length === 0) return null;
 
+  const active = registry.projects.filter((p) => p.status === 'active');
+  const completed = registry.projects.filter((p) => p.status === 'completed').slice(-2);
+  const visible = [...completed, ...active];
+
   return (
     <Box flexDirection="column" borderStyle="round" borderColor="magenta" paddingX={1}>
       <Text bold color="magenta">
         프로젝트
       </Text>
 
-      {registry.projects.map((p) => (
+      {visible.map((p) => (
         <Box key={p.name} gap={1}>
           <Text color={PROJECT_STATUS_COLOR[p.status] ?? 'gray'}>
             {PROJECT_STATUS_ICON[p.status] ?? '○'}
           </Text>
-          <Text bold={p.status === 'active'}>{p.name.padEnd(14)}</Text>
-          <Text color={PROJECT_STATUS_COLOR[p.status] ?? 'gray'}>{p.status.padEnd(10)}</Text>
-          <Text color="gray" dimColor>
-            {p.path}
-          </Text>
+          <Text bold={p.status === 'active'}>{p.name}</Text>
+          <Text color={PROJECT_STATUS_COLOR[p.status] ?? 'gray'}>{p.status}</Text>
         </Box>
       ))}
     </Box>
