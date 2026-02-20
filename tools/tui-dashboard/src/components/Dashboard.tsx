@@ -265,15 +265,22 @@ export const Dashboard: React.FC = () => {
   }
 
   const timeStr = clock.toLocaleTimeString('ko-KR', { hour12: false });
-  const modelLabel = session.model
-    ? session.model.includes('opus')
+
+  function parseModelLabel(model: string | undefined): string {
+    if (!model) return 'Sonnet';
+    const name = model.includes('opus')
       ? 'Opus'
-      : session.model.includes('sonnet')
+      : model.includes('sonnet')
         ? 'Sonnet'
-        : session.model.includes('haiku')
+        : model.includes('haiku')
           ? 'Haiku'
-          : session.model.replace('claude-', '').slice(0, 6)
-    : 'Sonnet';
+          : model.replace('claude-', '').slice(0, 6);
+    const m = model.match(/(\d+)[.-](\d+)/);
+    const version = m ? `${m[1]}.${m[2]}` : '';
+    return version ? `${name} ${version}` : name;
+  }
+
+  const modelLabel = parseModelLabel(session.model);
   const modelColor = session.model?.includes('opus')
     ? ('magenta' as const)
     : session.model?.includes('haiku')
