@@ -1,34 +1,148 @@
 {
-  "project": "tui-maintenance",
-  "currentPhase": 3,
+  "project": "tteok-platform",
+  "currentPhase": 5,
   "waveTimings": {
-    "1": { "startedAt": "2026-02-19T15:00:00.000Z", "completedAt": "2026-02-19T15:15:00.000Z" },
-    "2": { "startedAt": "2026-02-19T17:00:00.000Z", "completedAt": "2026-02-19T17:10:00.000Z" },
-    "3": { "startedAt": "2026-02-19T17:30:00.000Z", "completedAt": "2026-02-19T18:00:00.000Z" }
+    "1": { "startedAt": "2026-02-20T12:05:00.000Z", "completedAt": "2026-02-20T12:15:00.000Z" },
+    "2": { "startedAt": "2026-02-20T12:16:00.000Z", "completedAt": "2026-02-20T12:30:00.000Z" },
+    "3": { "startedAt": "2026-02-20T13:00:00.000Z", "completedAt": "2026-02-20T13:10:00.000Z" },
+    "4": { "startedAt": "2026-02-20T13:15:00.000Z", "completedAt": "2026-02-20T13:30:00.000Z" },
+    "5": { "startedAt": "2026-02-20T13:35:00.000Z", "completedAt": "2026-02-20T13:50:00.000Z" }
   },
   "roster": [
     {
-      "name": "Sonnet-TUI",
+      "name": "Sonnet-Setup",
       "model": "claude-sonnet-4-6",
-      "task": "TUI 고도화 — 감사 및 개선",
-      "phase": 1,
+      "task": "Next.js 설정",
+      "wave": 1,
       "status": "completed"
     },
     {
-      "name": "Sonnet-LogPanel",
+      "name": "Sonnet-Schema",
       "model": "claude-sonnet-4-6",
-      "task": "실시간 로그 패널 구현",
-      "phase": 2,
+      "task": "Prisma 스키마 + 시드",
+      "wave": 1,
       "status": "completed"
     },
     {
-      "name": "Sonnet-WaveTimeline",
+      "name": "Sonnet-Collector",
       "model": "claude-sonnet-4-6",
-      "task": "Wave 타임라인 구현",
-      "phase": 3,
+      "task": "data-collector CLI",
+      "wave": 1,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-API-Shops",
+      "model": "claude-sonnet-4-6",
+      "task": "Shops API",
+      "wave": 2,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-API-Regions",
+      "model": "claude-sonnet-4-6",
+      "task": "Regions/Categories API",
+      "wave": 2,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-API-Search",
+      "model": "claude-sonnet-4-6",
+      "task": "Search API",
+      "wave": 2,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-API-Blog",
+      "model": "claude-sonnet-4-6",
+      "task": "Blog API",
+      "wave": 2,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-Home",
+      "model": "claude-sonnet-4-6",
+      "task": "홈페이지",
+      "wave": 3,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-ShopList",
+      "model": "claude-sonnet-4-6",
+      "task": "떡집 목록",
+      "wave": 3,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-ShopDetail",
+      "model": "claude-sonnet-4-6",
+      "task": "떡집 상세+지도",
+      "wave": 3,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-Blog",
+      "model": "claude-sonnet-4-6",
+      "task": "블로그 페이지",
+      "wave": 3,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-Auth",
+      "model": "claude-sonnet-4-6",
+      "task": "Auth.js v5 인증",
+      "wave": 4,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-Admin-CRUD",
+      "model": "claude-sonnet-4-6",
+      "task": "관리자 CRUD",
+      "wave": 4,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-Image",
+      "model": "claude-sonnet-4-6",
+      "task": "이미지 업로드",
+      "wave": 4,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-Admin-Blog",
+      "model": "claude-sonnet-4-6",
+      "task": "블로그 편집기",
+      "wave": 4,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-SEO",
+      "model": "claude-sonnet-4-6",
+      "task": "메타태그, JSON-LD, sitemap",
+      "wave": 5,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-ContentGen",
+      "model": "claude-sonnet-4-6",
+      "task": "AI 콘텐츠 생성 CLI",
+      "wave": 5,
+      "status": "completed"
+    },
+    {
+      "name": "Sonnet-Admin-AI",
+      "model": "claude-sonnet-4-6",
+      "task": "관리자 AI 패널",
+      "wave": 5,
+      "status": "completed"
+    },
+    {
+      "name": "Haiku-Docs",
+      "model": "claude-haiku-4-5",
+      "task": "README, API 문서",
+      "wave": 5,
       "status": "completed"
     }
   ],
   "agents": [],
-  "updatedAt": "2026-02-19T18:00:00.000Z"
+  "updatedAt": "2026-02-20T13:50:00.000Z"
 }

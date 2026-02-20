@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { PHASE_STATE_PATH, DEFAULT_PHASE_NAMES } from '../config.js';
+import { PHASE_STATE_PATH, ACTIVE_AGENTS_PATH, DEFAULT_PHASE_NAMES } from '../config.js';
 
 export interface PhaseInfo {
   number: number;
@@ -15,13 +15,81 @@ interface PhaseStateFile {
   phaseNames?: string[] | Record<string, string>;
 }
 
+interface WaveTiming {
+  startedAt: string;
+  completedAt?: string;
+}
+
+interface ActiveAgentsFile {
+  project?: string;
+  currentPhase?: number;
+  waveTimings?: Record<string, WaveTiming>;
+  roster?: Array<{ wave?: number; status?: string }>;
+}
+
 function getPhaseName(names: string[] | Record<string, string> | undefined, index: number): string {
   if (!names) return DEFAULT_PHASE_NAMES[index] ?? `Phase ${index}`;
   if (Array.isArray(names)) return names[index] ?? `Phase ${index}`;
   return names[String(index)] ?? DEFAULT_PHASE_NAMES[index] ?? `Phase ${index}`;
 }
 
+/**
+ * Derive phase info from active-agents.json waveTimings.
+ * A wave is "done" if completedAt is set, "active" if startedAt is set but no completedAt.
+ */
+function getPhasesFromActiveAgents(
+  phaseNames?: string[] | Record<string, string>,
+): PhaseInfo[] | null {
+  if (!existsSync(ACTIVE_AGENTS_PATH)) return null;
+  try {
+    const data: ActiveAgentsFile = JSON.parse(readFileSync(ACTIVE_AGENTS_PATH, 'utf-8'));
+    const timings = data.waveTimings;
+    if (!timings || Object.keys(timings).length === 0) return null;
+
+    const waveNums = Object.keys(timings)
+      .map(Number)
+      .sort((a, b) => a - b);
+    const maxWave = Math.max(...waveNums);
+
+    // Determine total waves: from phase-state or at least up to maxWave
+    let totalWaves = maxWave;
+    if (existsSync(PHASE_STATE_PATH)) {
+      try {
+        const ps: PhaseStateFile = JSON.parse(readFileSync(PHASE_STATE_PATH, 'utf-8'));
+        if (ps.totalPhases && ps.totalPhases > totalWaves) totalWaves = ps.totalPhases;
+        if (!phaseNames) phaseNames = ps.phaseNames;
+      } catch {
+        /* ignore */
+      }
+    }
+
+    const phases: PhaseInfo[] = [];
+    for (let i = 1; i <= totalWaves; i++) {
+      const timing = timings[String(i)];
+      let status: PhaseInfo['status'] = 'pending';
+      if (timing?.completedAt) {
+        status = 'done';
+      } else if (timing?.startedAt) {
+        status = 'active';
+      }
+      phases.push({
+        number: i,
+        name: getPhaseName(phaseNames, i - 1), // phaseNames is 0-indexed
+        status,
+      });
+    }
+    return phases.length > 0 ? phases : null;
+  } catch {
+    return null;
+  }
+}
+
 export function getPhases(projectPath?: string): PhaseInfo[] {
+  // Priority 1: wave-based phases from active-agents.json waveTimings
+  const wavePhases = getPhasesFromActiveAgents();
+  if (wavePhases) return wavePhases;
+
+  // Priority 2: phase-state.json
   if (existsSync(PHASE_STATE_PATH)) {
     try {
       const state = JSON.parse(readFileSync(PHASE_STATE_PATH, 'utf-8')) as PhaseStateFile;
@@ -43,6 +111,7 @@ export function getPhases(projectPath?: string): PhaseInfo[] {
     }
   }
 
+  // Priority 3: artifact-based detection from project path
   if (projectPath && existsSync(projectPath)) {
     const artifacts: Record<number, string[]> = {
       0: [],

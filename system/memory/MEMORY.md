@@ -52,6 +52,11 @@
 
 ## Common Rules
 
+- **병렬 최우선 (MANDATORY)**: 독립적인 작업은 반드시 병렬 실행. Wave 내 태스크, 서브에이전트 디스패치, Tool 호출 모두 의존성 없으면 동시 실행.
+- **TUI 가시성 (MANDATORY)**: 모든 AI 작업은 TUI에서 확인 가능해야 함.
+  - 3단계 이상 작업 → `TodoWrite` 필수 (세션 패널에 실시간 반영)
+  - 서브에이전트 실행 → `active-agents.json`에 roster/agents 기록
+  - 단순 작업도 in_progress → completed 상태 전환 명시
 - Phase skip = always confirm | Post-project = retrospective + changelog
 - pnpm hardlinks (actual disk < reported) | Dev env = maintenance (not pipeline)
 - Doc split: AI→English compressed (`manuals/`), User→Korean readable (`docs/`)

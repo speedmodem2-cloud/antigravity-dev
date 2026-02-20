@@ -236,12 +236,20 @@ export const Dashboard: React.FC = () => {
 
   function checkProjects() {
     try {
-      if (existsSync(PROJECTS_PATH)) {
-        const reg = JSON.parse(readFileSync(PROJECTS_PATH, 'utf-8'));
-        setHasProjects(reg.projects?.length > 0);
-      } else {
-        setHasProjects(false);
-      }
+      // Show panel if registry has projects OR active-agents.json names a project
+      const hasRegistry = existsSync(PROJECTS_PATH)
+        ? (() => {
+            const reg = JSON.parse(readFileSync(PROJECTS_PATH, 'utf-8'));
+            return (reg.projects?.length ?? 0) > 0;
+          })()
+        : false;
+      const hasAgentProject = existsSync(ACTIVE_AGENTS_PATH)
+        ? (() => {
+            const data = JSON.parse(readFileSync(ACTIVE_AGENTS_PATH, 'utf-8'));
+            return typeof data.project === 'string' && data.project.length > 0;
+          })()
+        : false;
+      setHasProjects(hasRegistry || hasAgentProject);
     } catch {
       setHasProjects(false);
     }

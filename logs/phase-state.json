@@ -1,8 +1,8 @@
 {
-  "project": "shop-backend2-1",
+  "project": "tteok-platform",
   "currentPhase": 0,
   "completedPhases": [],
   "totalPhases": 5,
-  "phaseNames": ["사전준비", "코어모듈(W2)", "실시간(W3)", "고급+테스트(W4)", "배포+문서(W5)"],
-  "updatedAt": "2026-02-19T12:00:00.000Z"
+  "phaseNames": ["셋업+스키마(W1)", "코어API(W2)", "프론트엔드(W3)", "관리자(W4)", "SEO+AI(W5)"],
+  "updatedAt": "2026-02-20T12:00:00.000Z"
 }
