@@ -10,5 +10,14 @@
   "devDependencies": {
     "tsx": "^4.19.0",
     "typescript": "^5.9.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "puppeteer",
+      "esbuild"
+    ]
+  },
+  "dependencies": {
+    "puppeteer": "^24.37.5"
   }
 }
