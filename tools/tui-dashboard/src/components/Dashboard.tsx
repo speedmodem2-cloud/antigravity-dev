@@ -6,12 +6,15 @@ import { TokenPanel } from './TokenPanel.js';
 import { ProjectPanel } from './ProjectPanel.js';
 import { PhaseBar } from './PhaseBar.js';
 import { LogPanel } from './LogPanel.js';
+import { HistoryPanel } from './HistoryPanel.js';
 import { LogTracker } from '../modules/log-tracker.js';
 import type { LogEntry } from '../modules/log-tracker.js';
 import { StatusTracker } from '../modules/status-tracker.js';
 import { TokenTracker } from '../modules/token-tracker.js';
 import { SessionTracker } from '../modules/session-tracker.js';
 import { SubagentTracker } from '../modules/subagent-tracker.js';
+import { HistoryTracker } from '../modules/history-tracker.js';
+import type { WorkHistoryEntry } from '../modules/history-tracker.js';
 import { getPhases } from '../modules/phase-tracker.js';
 import {
   DEV_ROOT,
@@ -128,10 +131,13 @@ export const Dashboard: React.FC = () => {
   const [, setColumns] = useState(process.stdout.columns || 80);
   const [projectAlert, setProjectAlert] = useState<string | null>(null);
   const lastEventCountRef = useRef(0);
+  const [workHistory, setWorkHistory] = useState<WorkHistoryEntry[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   useInput((input) => {
     if (input === 'q') exit();
     if (input === 'w') setShowCompletedWaves((prev) => !prev);
+    if (input === 'h') setShowHistory((prev) => !prev);
     if (input === 'r') setClock(new Date()); // force re-render
   });
 
@@ -141,6 +147,8 @@ export const Dashboard: React.FC = () => {
     const sessionTracker = new SessionTracker();
     const subagentTracker = new SubagentTracker();
     const logTracker = new LogTracker();
+    const historyTracker = new HistoryTracker();
+    historyTracker.start();
 
     lastProjectRef.current = getActiveProjectName();
     statusTracker.start();
@@ -175,6 +183,28 @@ export const Dashboard: React.FC = () => {
       const adHocAgents = subagentTracker.getSubagents().filter((a) => !waveRoles.has(a.name));
       setAgents([...waveAgents, ...adHocAgents]);
       setWaveTimings({ ...statusTracker.getWaveTimings() });
+
+      // Feed agents into work history
+      const projName = currentProject ?? lastProjectRef.current ?? 'unknown';
+      for (const a of waveAgents) {
+        const waveNum =
+          typeof a.phase === 'number' ? a.phase : parseInt(String(a.phase ?? '0'), 10) || 0;
+        historyTracker.recordWaveAgent(
+          projName,
+          waveNum,
+          a.name,
+          a.model ?? '',
+          a.currentTask || a.name,
+        );
+        if (a.status === 'idle' || a.isCompleted)
+          historyTracker.completeWaveAgent(projName, waveNum, a.name);
+      }
+      for (const a of adHocAgents) {
+        historyTracker.recordAdHocTask(projName, a.currentTask || a.name, a.model ?? '');
+        if (a.status === 'idle' || a.isCompleted)
+          historyTracker.completeAdHocTask(projName, a.currentTask || a.name);
+      }
+      setWorkHistory(historyTracker.getAllHistory());
 
       if (currentProject) {
         // Active project → normal update
@@ -222,6 +252,7 @@ export const Dashboard: React.FC = () => {
       statusTracker.stop();
       subagentTracker.stop();
       tokenTracker.stopWatching();
+      historyTracker.stop();
     };
   }, []);
 
@@ -282,7 +313,9 @@ export const Dashboard: React.FC = () => {
         ? 'Sonnet'
         : model.includes('haiku')
           ? 'Haiku'
-          : model.replace('claude-', '').slice(0, 6);
+          : model.includes('gemini')
+            ? 'Gemini'
+            : model.replace('claude-', '').slice(0, 6);
     const m = model.match(/(\d+)[.-](\d+)/);
     const version = m ? `${m[1]}.${m[2]}` : '';
     return version ? `${name} ${version}` : name;
@@ -291,9 +324,11 @@ export const Dashboard: React.FC = () => {
   const modelLabel = parseModelLabel(session.model);
   const modelColor = session.model?.includes('opus')
     ? ('magenta' as const)
-    : session.model?.includes('haiku')
-      ? ('blue' as const)
-      : ('cyan' as const);
+    : session.model?.includes('gemini')
+      ? ('yellow' as const)
+      : session.model?.includes('haiku')
+        ? ('blue' as const)
+        : ('cyan' as const);
 
   return (
     <Box flexDirection="column" paddingX={1}>
@@ -307,15 +342,14 @@ export const Dashboard: React.FC = () => {
       <Box justifyContent="space-between">
         <Box gap={1}>
           <Text bold color={THEME.header}>
-            ◆ AG Dev Dashboard
+            ◆ AG Dev
           </Text>
           <Text color="gray">v{VERSION}</Text>
-          <Text color="gray">|</Text>
           <Text bold color={modelColor}>
             {modelLabel}
           </Text>
         </Box>
-        <Text color="gray">{timeStr} | w: waves | r: refresh | q: exit</Text>
+        <Text color="gray">{timeStr} | h w r q</Text>
       </Box>
 
       <AgentPanel
@@ -330,6 +364,7 @@ export const Dashboard: React.FC = () => {
       <TokenPanel summary={tokenSummary} />
       {hasProjects && <ProjectPanel registryPath={PROJECTS_PATH} />}
       <PhaseBar phases={phases} isWaveBased={isWaveBased} />
+      <HistoryPanel history={workHistory} visible={showHistory} />
     </Box>
   );
 };

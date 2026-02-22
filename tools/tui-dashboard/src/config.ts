@@ -11,6 +11,7 @@ export const PHASE_STATE_PATH = join(DEV_ROOT, 'logs', 'phase-state.json');
 export const AGENT_DEFS_DIR = join(DEV_ROOT, 'system', 'agents', 'definitions');
 export const AGENT_LOG_DIR = join(process.env.LOCALAPPDATA ?? '', 'AntiGravity', 'logs');
 export const ACTIVE_AGENTS_PATH = join(DEV_ROOT, 'logs', 'active-agents.json');
+export const WORK_HISTORY_PATH = join(DEV_ROOT, 'logs', 'work-history.json');
 
 /* ── Version (from package.json) ── */
 
@@ -35,16 +36,14 @@ export const SHORT_MODEL: Record<string, string> = {
   'claude-sonnet-4.5': 'Son',
   'claude-haiku-4-5': 'Hai',
   'claude-haiku-4.5': 'Hai',
-  'gemini-3-pro': 'Gem',
+  'gemini-2.5-pro': 'Gem',
+  'gemini-2.5-flash': 'Gem',
 };
 
 export function shortModel(model: string): string {
   return (
     SHORT_MODEL[model] ??
-    model
-      .replace(/^claude-/, '')
-      .replace(/^gemini-/, '')
-      .slice(0, 4)
+    (model.includes('gemini') ? 'Gem' : model.replace(/^claude-/, '').slice(0, 4))
   );
 }
 
@@ -59,7 +58,8 @@ export const MODEL_COSTS: Record<string, { input: number; output: number }> = {
   'claude-sonnet-4.5': { input: 3.0 / 1e6, output: 15.0 / 1e6 },
   'claude-haiku-4-5': { input: 0.8 / 1e6, output: 4.0 / 1e6 },
   'claude-haiku-4.5': { input: 0.8 / 1e6, output: 4.0 / 1e6 },
-  'gemini-3-pro': { input: 1.25 / 1e6, output: 10.0 / 1e6 },
+  'gemini-2.5-pro': { input: 1.25 / 1e6, output: 10.0 / 1e6 },
+  'gemini-2.5-flash': { input: 0.15 / 1e6, output: 0.6 / 1e6 },
 };
 
 export function modelCost(model: string): { input: number; output: number } {
