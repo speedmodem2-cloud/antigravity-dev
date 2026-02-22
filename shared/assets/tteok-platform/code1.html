@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Rice Cake Directory Home Screen V2</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&amp;family=Playfair+Display:wght@400;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#3A5A40', // Deep Mugwort Green
+              secondary: '#DAD7CD', // Sage/Warm Neutral
+              accent: '#A3B18A', // Light Green
+              'background-light': '#FDFBF7', // Warm Off-White
+              'background-dark': '#1A1C1A', // Very Dark Grey/Green
+              'surface-light': '#FFFFFF',
+              'surface-dark': '#2C302C',
+              'text-main-light': '#333333',
+              'text-main-dark': '#E2E8F0',
+            },
+            fontFamily: {
+              display: ["'Playfair Display'", 'serif'],
+              sans: ["'Noto Sans KR'", 'sans-serif'],
+            },
+            borderRadius: {
+              DEFAULT: '0.5rem',
+              xl: '1rem',
+              '2xl': '1.5rem',
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family: 'Noto Sans KR', sans-serif;
+      }
+      .font-serif {
+        font-family: 'Playfair Display', serif;
+      }
+      .hero-pattern {
+        background-color: #3a5a40;
+        background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuA93E9XbhxtEuSK5WwND8PSAfzfWSMNDBDAWhd_KRBiRPJ_NNU3PFQPuHBZ2ESqDcN793YDenW9qhYTstjiJXN0npq2No_BzKFe4nkpQMo8Dw1ZHBkzxhWrOpFHoOGdbj56TgSdX_i3zHZnTeA-wyrP_LDNKVPcUD4uPjKRg-xu06q58paQgvXxyqZGzluN61AQuoqqXH867LGNfG-UtMA56af119Q6Bc2ZrRKiE6yrDFAQUVf_InIvEwphSOrXMO5NAOiGfM4D7dYk);
+        background-size: cover;
+        background-position: center;
+      }
+      .hero-overlay {
+        background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5));
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark transition-colors duration-300"
+  >
+    <nav
+      class="sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors duration-300"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex-shrink-0 flex items-center">
+            <a
+              class="text-2xl font-serif font-bold text-primary dark:text-accent tracking-tighter"
+              href="#"
+            >
+              떡마실
+            </a>
+          </div>
+          <div class="hidden md:flex space-x-8 items-center">
+            <a
+              class="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-accent font-medium transition"
+              href="#"
+              >홈</a
+            >
+            <a
+              class="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-accent font-medium transition"
+              href="#"
+              >떡집 목록</a
+            >
+            <a
+              class="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-accent font-medium transition"
+              href="#"
+              >이달의 추천</a
+            >
+            <a
+              class="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-accent font-medium transition"
+              href="#"
+              >커뮤니티</a
+            >
+          </div>
+          <div class="flex items-center space-x-4">
+            <button
+              class="p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-accent transition"
+            >
+              <span class="material-icons-outlined">search</span>
+            </button>
+            <button
+              class="p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-accent transition"
+            >
+              <span class="material-icons-outlined">notifications</span>
+            </button>
+            <a
+              class="hidden sm:block px-4 py-2 rounded-full bg-primary text-white text-sm font-medium hover:bg-opacity-90 transition shadow-sm"
+              href="#"
+            >
+              로그인
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <section
+      class="relative h-[600px] flex items-center justify-center text-center overflow-hidden"
+    >
+      <div class="absolute inset-0 hero-pattern"></div>
+      <div class="absolute inset-0 hero-overlay"></div>
+      <div class="relative z-10 max-w-4xl px-6">
+        <span
+          class="inline-block py-1 px-3 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-medium mb-6 border border-white/30"
+        >
+          전통의 맛, 현대의 감성
+        </span>
+        <h1
+          class="text-5xl md:text-6xl font-serif font-bold text-white mb-6 leading-tight drop-shadow-md"
+        >
+          전국 떡집을 한눈에<br />
+          <span class="text-accent italic font-light">당신의 취향을 찾아보세요</span>
+        </h1>
+        <p class="text-lg text-gray-200 mb-10 font-light max-w-2xl mx-auto drop-shadow">
+          나만 알고 싶은 숨은 떡집 맛집 검색부터<br class="hidden sm:inline" />
+          메뉴 정보와 위치 확인까지 한번에 해결하세요.
+        </p>
+        <div
+          class="bg-white/95 dark:bg-surface-dark/95 backdrop-blur rounded-full shadow-2xl p-2 flex items-center max-w-2xl mx-auto transform transition hover:scale-[1.01]"
+        >
+          <div class="pl-4 pr-2 text-gray-400">
+            <span class="material-icons-outlined text-2xl">location_on</span>
+          </div>
+          <select
+            class="bg-transparent border-none text-gray-700 dark:text-gray-200 font-medium focus:ring-0 cursor-pointer w-32 text-sm"
+          >
+            <option>전체 지역</option>
+            <option>서울</option>
+            <option>경기/인천</option>
+            <option>부산/경상</option>
+          </select>
+          <div class="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-2"></div>
+          <input
+            class="flex-grow bg-transparent border-none text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:ring-0"
+            placeholder="떡집 이름 또는 주소 검색..."
+            type="text"
+          />
+          <button
+            class="bg-primary hover:bg-opacity-90 text-white rounded-full p-3 shadow-md transition-colors"
+          >
+            <span class="material-icons-outlined text-xl">search</span>
+          </button>
+        </div>
+        <div class="mt-8 flex justify-center space-x-2 text-sm text-white/90 overflow-x-auto pb-2">
+          <span class="whitespace-nowrap cursor-pointer hover:underline">#백일떡</span>
+          <span class="mx-1 opacity-50">•</span>
+          <span class="whitespace-nowrap cursor-pointer hover:underline">#답례떡</span>
+          <span class="mx-1 opacity-50">•</span>
+          <span class="whitespace-nowrap cursor-pointer hover:underline">#쑥개떡</span>
+          <span class="mx-1 opacity-50">•</span>
+          <span class="whitespace-nowrap cursor-pointer hover:underline">#퓨전떡케이크</span>
+        </div>
+      </div>
+    </section>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="mb-20">
+        <div class="flex justify-between items-end mb-8">
+          <div>
+            <h2 class="text-3xl font-serif font-bold text-gray-900 dark:text-white mb-2">
+              이달의 베스트 떡집
+            </h2>
+            <p class="text-gray-500 dark:text-gray-400">가장 사랑받는 인기 떡집을 만나보세요.</p>
+          </div>
+          <a
+            class="text-primary dark:text-accent font-medium hover:underline flex items-center"
+            href="#"
+          >
+            전체보기 <span class="material-icons-outlined text-sm ml-1">arrow_forward</span>
+          </a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="group relative h-80 rounded-2xl overflow-hidden shadow-lg cursor-pointer">
+            <img
+              alt="Traditional korean dessert arrangement"
+              class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8elX6IHNv14FgHMgrIXYfKVrfuP8cRMIl1nbqzB3Fm7wf2SKt2vDd7RWO4Z79O4TqiHhFBrazfuOf9hjnRrnj1nCLv0dF28lg-iqKx4gB8L5ukZBZ9Wu-RFbAo2rG1IejJl5rrYTNdXS_pN6GQaXSDsMNQDsFZ0Egk3aT5FMavMDTlQjvIzBAHov7wuxxCyMdPeLTMZEslOffjFX34blnzhluh6aAtiN9SL3HToR8EkyiFm23YWEWD0ZxJebXP1KokKlvp_K7S5oB"
+            />
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"
+            ></div>
+            <div class="absolute bottom-0 left-0 p-8">
+              <div class="flex items-center space-x-2 mb-2">
+                <span class="bg-accent text-primary text-xs font-bold px-2 py-1 rounded">HOT</span>
+                <div class="flex text-yellow-400 text-sm">
+                  <span class="material-icons-outlined text-base">star</span>
+                  <span class="material-icons-outlined text-base">star</span>
+                  <span class="material-icons-outlined text-base">star</span>
+                  <span class="material-icons-outlined text-base">star</span>
+                  <span class="material-icons-outlined text-base">star_half</span>
+                </div>
+                <span class="text-gray-300 text-xs">(128)</span>
+              </div>
+              <h3 class="text-2xl font-bold text-white mb-1">궁중 떡방</h3>
+              <p class="text-gray-300 text-sm mb-4">서울 종로구 • 전통 궁중 떡 전문</p>
+              <span
+                class="inline-flex items-center text-white text-sm font-medium border-b border-white pb-0.5 group-hover:text-accent group-hover:border-accent transition"
+              >
+                상세보기 <span class="material-icons-outlined text-sm ml-1">arrow_forward</span>
+              </span>
+            </div>
+          </div>
+          <div class="group relative h-80 rounded-2xl overflow-hidden shadow-lg cursor-pointer">
+            <img
+              alt="Colorful rice cakes"
+              class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkDgGgESGUYst67oUs7PtiYrJSlDRvz3yZcrxjiC8nUHiPl98pj3Sdbnh9u46uqZ3fqLixvqWXsTJdkEPo0WXzcu-BZKoe7YzfE86ZkYyTaXQlhFJyaGQXaro8ql3rEIJcH9cpqhCRlAy3aGx-Ij_kBEhlKeKla9P9B8836uRyNoRJHwSpKqFbydsCubuAM1z6mxLc2aXsuq-kMnLzf4CsilbP6vR-tHVwhTktECivkQt8jqL6Npo_zID6VjpNO4fkEEbiEqNY4quY"
+            />
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"
+            ></div>
+            <div class="absolute bottom-0 left-0 p-8">
+              <div class="flex items-center space-x-2 mb-2">
+                <span
+                  class="bg-white/20 backdrop-blur text-white text-xs font-bold px-2 py-1 rounded"
+                  >NEW</span
+                >
+                <div class="flex text-yellow-400 text-sm">
+                  <span class="material-icons-outlined text-base">star</span>
+                  <span class="material-icons-outlined text-base">star</span>
+                  <span class="material-icons-outlined text-base">star</span>
+                  <span class="material-icons-outlined text-base">star</span>
+                  <span class="material-icons-outlined text-base">star_border</span>
+                </div>
+                <span class="text-gray-300 text-xs">(42)</span>
+              </div>
+              <h3 class="text-2xl font-bold text-white mb-1">모던 라이스</h3>
+              <p class="text-gray-300 text-sm mb-4">경기 판교 • 퓨전 떡 케이크</p>
+              <span
+                class="inline-flex items-center text-white text-sm font-medium border-b border-white pb-0.5 group-hover:text-accent group-hover:border-accent transition"
+              >
+                상세보기 <span class="material-icons-outlined text-sm ml-1">arrow_forward</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-20">
+        <div class="flex justify-between items-end mb-8">
+          <div>
+            <h2 class="text-3xl font-serif font-bold text-gray-900 dark:text-white mb-2">
+              당신을 위한 추천
+            </h2>
+            <p class="text-gray-500 dark:text-gray-400">고객님의 취향을 반영한 떡집 큐레이션</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div
+            class="bg-surface-light dark:bg-surface-dark rounded-xl overflow-hidden shadow hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700"
+          >
+            <div class="relative h-48 bg-gray-200">
+              <img
+                alt="Close up of matcha rice cake"
+                class="w-full h-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcb005tUDOi3yKiarAS2lYng_1Viq-83V1IFn1Olrre9rTRNDyd54f5tJjet3Lb5_G2tTjCvoZ8x9vrK8ca558kjrVV83tJs6HYWkudcJRGbv3FirhY7t7iWAUU2g-MDFYdHPcQ0bEPuk8FGWIyiGEn7UozNWbTCt8IApqM-BfTVjAzf6rSQPProbBtyOdONRzn7e8GGGsrThpGzzhcj8xjyIunE3Z8nKXcL9Z4nuxuE0j9Jn0TDZHTpn8vYdimnr6UklqepzuMMmi"
+              />
+              <button
+                class="absolute top-3 right-3 p-1.5 rounded-full bg-white/80 dark:bg-black/50 text-gray-600 dark:text-gray-300 hover:text-red-500 hover:bg-white transition"
+              >
+                <span class="material-icons-outlined text-xl">favorite_border</span>
+              </button>
+            </div>
+            <div class="p-5">
+              <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white truncate">
+                  수수 팥떡방
+                </h3>
+                <div
+                  class="flex items-center text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 px-1.5 py-0.5 rounded text-sm font-medium"
+                >
+                  <span class="material-icons-outlined text-sm mr-1">star</span>4.8
+                </div>
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 flex items-center">
+                <span class="material-icons-outlined text-sm mr-1">place</span> 서울 마포구 연남동
+              </p>
+              <div class="flex flex-wrap gap-2 mb-4">
+                <span
+                  class="text-xs px-2 py-1 rounded bg-secondary/30 text-gray-700 dark:text-gray-300 dark:bg-secondary/10"
+                  >수수팥떡</span
+                >
+                <span
+                  class="text-xs px-2 py-1 rounded bg-secondary/30 text-gray-700 dark:text-gray-300 dark:bg-secondary/10"
+                  >백일떡</span
+                >
+              </div>
+              <hr class="border-gray-100 dark:border-gray-700 mb-3" />
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-primary dark:text-accent font-medium">영업중</span>
+                <span class="text-gray-400">09:00 - 20:00</span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="bg-surface-light dark:bg-surface-dark rounded-xl overflow-hidden shadow hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700"
+          >
+            <div class="relative h-48 bg-gray-200">
+              <img
+                alt="Gift box of rice cakes"
+                class="w-full h-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAMr2mETqJYY3GjC7ZqtKQ43XVBKcRqouBwRlyQV_DU_q-mE-MBKxU0GMND5m1fyeBfkBN3Crs0V4wQ45pBf6w8XC8XLzPvNjpkyluCxwF2iyATZ6AabsDR3_c6uUEwsWNsmAWGtck7wCsYEb3rAmPSzWNhp5NbNciZVq4qx6zBbPKFO2uIwmlm0zWjFWk35JSpEh6EoB2xv49ZBBSBfWBvlZktIdOjrzoyNWPXOtHf4-OgzOvae-Sytpvr02Jts_qPn-HdTLhvwBL"
+              />
+              <button
+                class="absolute top-3 right-3 p-1.5 rounded-full bg-white/80 dark:bg-black/50 text-gray-600 dark:text-gray-300 hover:text-red-500 hover:bg-white transition"
+              >
+                <span class="material-icons-outlined text-xl">favorite_border</span>
+              </button>
+            </div>
+            <div class="p-5">
+              <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white truncate">예닮 떡집</h3>
+                <div
+                  class="flex items-center text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 px-1.5 py-0.5 rounded text-sm font-medium"
+                >
+                  <span class="material-icons-outlined text-sm mr-1">star</span>4.5
+                </div>
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 flex items-center">
+                <span class="material-icons-outlined text-sm mr-1">place</span> 부산 해운대구
+              </p>
+              <div class="flex flex-wrap gap-2 mb-4">
+                <span
+                  class="text-xs px-2 py-1 rounded bg-secondary/30 text-gray-700 dark:text-gray-300 dark:bg-secondary/10"
+                  >선물세트</span
+                >
+                <span
+                  class="text-xs px-2 py-1 rounded bg-secondary/30 text-gray-700 dark:text-gray-300 dark:bg-secondary/10"
+                  >이바지</span
+                >
+              </div>
+              <hr class="border-gray-100 dark:border-gray-700 mb-3" />
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400 font-medium">영업종료</span>
+                <span class="text-gray-400">10:00 - 19:00</span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="bg-surface-light dark:bg-surface-dark rounded-xl overflow-hidden shadow hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700"
+          >
+            <div class="relative h-48 bg-gray-200">
+              <img
+                alt="Songpyeon"
+                class="w-full h-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAp6cIddxf2dHKHMzzOCFbWgGSrqN7aGJT8zG9qifuTLfFtFUWgk-YV_bGXbHDsmrC1R87wM7fgjidsjrMC2dBTuCuuIgj7SETGUvXuSoPR099EdTEM-AgJ3rFQvok71pmJv0gZzM3EDsur69ZcKj2I2VN-G1I67ec5MPBG24UZ43H97neD_yJyeiTN-M5U3XsJSOQ33DiFO48Sf2tv9YAnoz6ApdpUuVR-jUBN3rTumMjEuJ2JmmyB7R_2l5-0ydJkvwbefUmyIF4M"
+              />
+              <button
+                class="absolute top-3 right-3 p-1.5 rounded-full bg-white/80 dark:bg-black/50 text-gray-600 dark:text-gray-300 hover:text-red-500 hover:bg-white transition"
+              >
+                <span class="material-icons-outlined text-xl">favorite_border</span>
+              </button>
+            </div>
+            <div class="p-5">
+              <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white truncate">
+                  할머니 송편
+                </h3>
+                <div
+                  class="flex items-center text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 px-1.5 py-0.5 rounded text-sm font-medium"
+                >
+                  <span class="material-icons-outlined text-sm mr-1">star</span>4.9
+                </div>
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 flex items-center">
+                <span class="material-icons-outlined text-sm mr-1">place</span> 광주 북구
+              </p>
+              <div class="flex flex-wrap gap-2 mb-4">
+                <span
+                  class="text-xs px-2 py-1 rounded bg-secondary/30 text-gray-700 dark:text-gray-300 dark:bg-secondary/10"
+                  >깨송편</span
+                >
+                <span
+                  class="text-xs px-2 py-1 rounded bg-secondary/30 text-gray-700 dark:text-gray-300 dark:bg-secondary/10"
+                  >콩송편</span
+                >
+              </div>
+              <hr class="border-gray-100 dark:border-gray-700 mb-3" />
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-primary dark:text-accent font-medium">영업중</span>
+                <span class="text-gray-400">08:00 - 18:00</span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="bg-surface-light dark:bg-surface-dark rounded-xl overflow-hidden shadow hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700"
+          >
+            <div class="relative h-48 bg-gray-200">
+              <img
+                alt="Tteokbokki rice cake raw"
+                class="w-full h-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBYvVh6hy36I9elz03ab5lpVP8LQbzZMTk-NebhIjB7SAdSwzRmS8e3xbnOOFf2ABGKhcg9d46wze2zQCgeTZlKCRYTIfDuf29uUiMQfMKEo34OMXqUBKZdKmoo-X5_HU1VFMBrlCydZ6luET2_FQdl9guwoKimb6Xv79LKELP-eMRExozJwYFOAuHXXF5kTZKD8ZOL7msVbGFW2_GtNo8toi2Wm0WwPEVJ7r_-8pDAzTPHHRg_Eu0kCktpYnhHPqksye5ViI6SEHN"
+              />
+              <button
+                class="absolute top-3 right-3 p-1.5 rounded-full bg-white/80 dark:bg-black/50 text-gray-600 dark:text-gray-300 hover:text-red-500 hover:bg-white transition"
+              >
+                <span class="material-icons-outlined text-xl">favorite_border</span>
+              </button>
+            </div>
+            <div class="p-5">
+              <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white truncate">
+                  쫄깃 방앗간
+                </h3>
+                <div
+                  class="flex items-center text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 px-1.5 py-0.5 rounded text-sm font-medium"
+                >
+                  <span class="material-icons-outlined text-sm mr-1">star</span>4.6
+                </div>
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 flex items-center">
+                <span class="material-icons-outlined text-sm mr-1">place</span> 경기 수원시
+              </p>
+              <div class="flex flex-wrap gap-2 mb-4">
+                <span
+                  class="text-xs px-2 py-1 rounded bg-secondary/30 text-gray-700 dark:text-gray-300 dark:bg-secondary/10"
+                  >가래떡</span
+                >
+                <span
+                  class="text-xs px-2 py-1 rounded bg-secondary/30 text-gray-700 dark:text-gray-300 dark:bg-secondary/10"
+                  >떡국떡</span
+                >
+              </div>
+              <hr class="border-gray-100 dark:border-gray-700 mb-3" />
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-primary dark:text-accent font-medium">영업중</span>
+                <span class="text-gray-400">07:00 - 21:00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+        <div class="relative rounded-2xl overflow-hidden h-48 group cursor-pointer">
+          <img
+            alt="Gift sets"
+            class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuANks7Mv9Sz0U3x5IIQdzx0bUeHof6Jpl0pT3drxHcJM2o8csal_NzsHn-COllja71Qf-ZGInF_8ccHh8SRdZuoxcYNpcQ5OxQ8tTommVk3_d-nlt0p711vpR8NoJYJDnzH2fE0j3U698M4Xu1vUX748AtUTkxvLkGc3iogX4E032rwGtjMyRbDeg5INYLEFu-Befmcbdqm5NN9-sUZ9A7xxeKl9xJmLsqzdbnD40cmcA92lnxXFc2EO1giKY6IgvuaOgp2C4O-PAJA"
+          />
+          <div class="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors"></div>
+          <div
+            class="absolute inset-0 flex flex-col justify-center items-center text-white p-4 text-center"
+          >
+            <span class="material-icons-outlined text-4xl mb-2 text-accent">card_giftcard</span>
+            <h3 class="text-xl font-bold font-serif">답례품 추천</h3>
+            <p class="text-sm opacity-80 mt-1">소중한 분들께 전하는 마음</p>
+          </div>
+        </div>
+        <div class="relative rounded-2xl overflow-hidden h-48 group cursor-pointer">
+          <img
+            alt="Traditional snacks"
+            class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZJVNdgADbiJxPT72fTAvBbINaGyl0yGXBISW8POTxDUAxws83hTmepdc-KIVv2th7J7_pJtV8K4nzN7-QL0qBUBlCve60IYgdUsYbqkDcocEwBaboj4g6vyvlbgiAGQLsmTKsu8B9JUW3fH8iEVZmfHUq6YEH3lRcw6pt0Sw2Ukb-HWm9mMyb-dbqrQdGp5_w58yQA5HIbJE8g4ejxLOgZzigvClG5YhybuPTtdEfE5kmz14XPkIbpT6NOM9uAI7Wl9a72YjnGyb1"
+          />
+          <div class="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors"></div>
+          <div
+            class="absolute inset-0 flex flex-col justify-center items-center text-white p-4 text-center"
+          >
+            <span class="material-icons-outlined text-4xl mb-2 text-accent">restaurant_menu</span>
+            <h3 class="text-xl font-bold font-serif">간식용 떡</h3>
+            <p class="text-sm opacity-80 mt-1">아이들 영양 간식부터 어른 입맛까지</p>
+          </div>
+        </div>
+        <div class="relative rounded-2xl overflow-hidden h-48 group cursor-pointer">
+          <img
+            alt="Making rice cakes"
+            class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuANSorUeIAnFgGHWns9JNyELmzBt0LmoFdP2xfc94L3FoTzbPgoPTfhNnsPtAbXqHy3FvQVnnCKXJbpY_A-BgPq4xqCvdZWQZohdnsyij9alNNEpVDvPGHKIX9JMzia7SqQW4YnJ6dZ4zVOfneswReWmiYEnNMGF96o1Y_rp55OHsi6zMAeEffDFmZACJoLNNNMbXOdykXGobYB-sXJIfaM_Y6Upg5UrtfXfdrSdg0Ysvs3JYeuUxpqQ6nV8zaJ4y_Ch7dBzChMmarO"
+          />
+          <div class="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors"></div>
+          <div
+            class="absolute inset-0 flex flex-col justify-center items-center text-white p-4 text-center"
+          >
+            <span class="material-icons-outlined text-4xl mb-2 text-accent">storefront</span>
+            <h3 class="text-xl font-bold font-serif">우리동네 신규 입점</h3>
+            <p class="text-sm opacity-80 mt-1">새로 오픈한 따끈따끈한 떡집</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-primary/5 dark:bg-primary/10 rounded-3xl p-8 md:p-12">
+        <div class="text-center mb-10">
+          <h2 class="text-3xl font-serif font-bold text-primary dark:text-accent mb-3">
+            떡 이야기
+          </h2>
+          <p class="text-gray-600 dark:text-gray-300">
+            떡을 사랑하는 사람들의 솔직한 이야기와 레시피
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <article
+            class="bg-white dark:bg-surface-dark p-6 rounded-xl shadow-sm hover:shadow-md transition"
+          >
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden mr-3">
+                <img
+                  alt="User Avatar"
+                  class="w-full h-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFzLBQ2LrXDqLJi19hzxWveCJ8-FJ6IwnQY7DSmKymzvFWP0C1ZWIvBKzTJ8wysxehUt8nrJH9KOJYJYNeyRqoJ6iwYHBV0jeYBbfE4dHveCwVgG6PJ3-XmoO_K5hNY-a9SiSjW-1eGkKgeMUkBSPY3w-rpAM4RKCqbIShNdkW9QZOwTAEmMniaXM1a0gOTBMw6KC8cUt1R9T1jYdX8Z7e7RyO3shAxgWThHd-9hknH2-GAUVo8DOtBgPIHJb5xy1l0TlojGOx3cWa"
+                />
+              </div>
+              <div>
+                <p class="text-sm font-bold text-gray-900 dark:text-white">떡순이맘</p>
+                <p class="text-xs text-gray-500">2시간 전</p>
+              </div>
+            </div>
+            <h3 class="font-bold text-gray-800 dark:text-gray-100 mb-2 truncate">
+              아이 백일떡 후기 남깁니다~
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
+              동네 떡집에서 맞췄는데 포장도 너무 고급스럽고 맛도 쫄깃해서 양가 부모님들이 정말
+              좋아하셨어요. 특히 수수팥떡이...
+            </p>
+            <div class="flex items-center text-gray-400 text-xs space-x-4">
+              <span class="flex items-center"
+                ><span class="material-icons-outlined text-sm mr-1">thumb_up</span> 24</span
+              >
+              <span class="flex items-center"
+                ><span class="material-icons-outlined text-sm mr-1">chat_bubble_outline</span>
+                8</span
+              >
+            </div>
+          </article>
+          <article
+            class="bg-white dark:bg-surface-dark p-6 rounded-xl shadow-sm hover:shadow-md transition"
+          >
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden mr-3">
+                <img
+                  alt="User Avatar"
+                  class="w-full h-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDURBctiSIQ6K_TH9WiON1nl8zqYlPyJfgzVTr7cl-I314PMqItHqLHlqyGlPaXUdIMHnbNplRBh8YHBmI80wFOPMIqTs2TuF27sFQH3r7HC7VrcUzNfrygwKSkDzsxXbv78R33NQLXliZ1b6vM2R7ZDt0RRBwkpjoX0o_Xg5yVgOhhWWThw517gE7GgKdeUh_tZwEtuIcganx03YRUgwwuW62tZUlNNDUpxRRgtrl8bqJCL8TsvT8OcPQ4-PzlkwarQXcla4BYDD8F"
+                />
+              </div>
+              <div>
+                <p class="text-sm font-bold text-gray-900 dark:text-white">전통사랑</p>
+                <p class="text-xs text-gray-500">5시간 전</p>
+              </div>
+            </div>
+            <h3 class="font-bold text-gray-800 dark:text-gray-100 mb-2 truncate">
+              집에서 인절미 만들기 도전!
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
+              찹쌀 불려서 찌고 콩가루 묻히는 과정이 생각보다 쉽지 않네요 ㅎㅎ 그래도 직접 만드니 더
+              고소한 것 같아요.
+            </p>
+            <div class="flex items-center text-gray-400 text-xs space-x-4">
+              <span class="flex items-center"
+                ><span class="material-icons-outlined text-sm mr-1">thumb_up</span> 45</span
+              >
+              <span class="flex items-center"
+                ><span class="material-icons-outlined text-sm mr-1">chat_bubble_outline</span>
+                12</span
+              >
+            </div>
+          </article>
+          <article
+            class="bg-white dark:bg-surface-dark p-6 rounded-xl shadow-sm hover:shadow-md transition"
+          >
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden mr-3">
+                <img
+                  alt="User Avatar"
+                  class="w-full h-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCj7ghqkzkgIMKG-4K2A1qjIaPPEYV6JZjryJQ119F6IvvW7x6DYSET4HXx7XykewCvDFJjxW6stw6QUrCCAvTU2Cnn7gCWbsq85l2KWoPYhZLOCXOal5IUPmf9MG3H86EkNPxPXKfo-dU3mXcw6Mdq9vK_uT35t7U1mrUEs2D0aWScACFyvZGsPm5Bk_gqheLvJ8UDg_yHkLU2Audtw5k5uJlq1aAkU-FoZJIAukaKAQFKP0G78e3LzyuDd4tWS1lBOSuq_sV_LIO6"
+                />
+              </div>
+              <div>
+                <p class="text-sm font-bold text-gray-900 dark:text-white">달콤한인생</p>
+                <p class="text-xs text-gray-500">1일 전</p>
+              </div>
+            </div>
+            <h3 class="font-bold text-gray-800 dark:text-gray-100 mb-2 truncate">
+              이번 추석 송편 예약 팁
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
+              유명한 곳들은 벌써 마감이래요. 아직 예약 가능한 괜찮은 곳들 리스트 공유합니다.
+              미리미리 준비하세요!
+            </p>
+            <div class="flex items-center text-gray-400 text-xs space-x-4">
+              <span class="flex items-center"
+                ><span class="material-icons-outlined text-sm mr-1">thumb_up</span> 82</span
+              >
+              <span class="flex items-center"
+                ><span class="material-icons-outlined text-sm mr-1">chat_bubble_outline</span>
+                34</span
+              >
+            </div>
+          </article>
+        </div>
+      </div>
+    </main>
+    <footer class="bg-white dark:bg-black border-t border-gray-100 dark:border-gray-800 pt-16 pb-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          <div class="col-span-1 md:col-span-1">
+            <a
+              class="text-2xl font-serif font-bold text-primary dark:text-accent mb-4 inline-block"
+              href="#"
+              >떡마실</a
+            >
+            <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-6">
+              전국 방방곡곡 숨겨진 떡 맛집을 찾아<br />
+              여러분의 일상에 달콤함을 전합니다.
+            </p>
+            <div class="flex space-x-4">
+              <a class="text-gray-400 hover:text-primary dark:hover:text-accent transition" href="#"
+                ><span class="material-icons-outlined">facebook</span></a
+              >
+              <a class="text-gray-400 hover:text-primary dark:hover:text-accent transition" href="#"
+                ><span class="material-icons-outlined">camera_alt</span></a
+              >
+              <a class="text-gray-400 hover:text-primary dark:hover:text-accent transition" href="#"
+                ><span class="material-icons-outlined">email</span></a
+              >
+            </div>
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-900 dark:text-white mb-4">서비스</h4>
+            <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+              <li>
+                <a class="hover:text-primary dark:hover:text-accent transition" href="#"
+                  >떡집 찾기</a
+                >
+              </li>
+              <li>
+                <a class="hover:text-primary dark:hover:text-accent transition" href="#"
+                  >테마별 추천</a
+                >
+              </li>
+              <li>
+                <a class="hover:text-primary dark:hover:text-accent transition" href="#"
+                  >커뮤니티</a
+                >
+              </li>
+              <li>
+                <a class="hover:text-primary dark:hover:text-accent transition" href="#">이벤트</a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-900 dark:text-white mb-4">고객지원</h4>
+            <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+              <li>
+                <a class="hover:text-primary dark:hover:text-accent transition" href="#"
+                  >공지사항</a
+                >
+              </li>
+              <li>
+                <a class="hover:text-primary dark:hover:text-accent transition" href="#"
+                  >자주 묻는 질문</a
+                >
+              </li>
+              <li>
+                <a class="hover:text-primary dark:hover:text-accent transition" href="#"
+                  >1:1 문의</a
+                >
+              </li>
+              <li>
+                <a class="hover:text-primary dark:hover:text-accent transition" href="#"
+                  >입점 문의</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-900 dark:text-white mb-4">뉴스레터 구독</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              새로운 떡집 소식과 할인 혜택을 받아보세요.
+            </p>
+            <form class="flex">
+              <input
+                class="flex-grow bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-l-lg px-4 py-2 text-sm focus:outline-none focus:border-primary dark:focus:border-accent"
+                placeholder="이메일 주소"
+                type="email"
+              />
+              <button
+                class="bg-primary text-white px-4 py-2 rounded-r-lg text-sm font-medium hover:bg-opacity-90 transition"
+              >
+                구독
+              </button>
+            </form>
+          </div>
+        </div>
+        <div
+          class="border-t border-gray-100 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center"
+        >
+          <p class="text-xs text-gray-400 mb-4 md:mb-0">© 2023 떡마실. All rights reserved.</p>
+          <div class="flex space-x-6 text-xs text-gray-500 dark:text-gray-400">
+            <a class="hover:text-gray-900 dark:hover:text-white transition" href="#">이용약관</a>
+            <a class="hover:text-gray-900 dark:hover:text-white transition" href="#"
+              >개인정보처리방침</a
+            >
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

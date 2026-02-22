@@ -33,6 +33,7 @@
 - `phase-manager`: `tsx tools/phase-manager/src/index.ts <cmd>` (init/advance/complete/skip/status/reset)
 - `retrospect`: `tsx tools/retrospect/src/index.ts analyze <project>`
 - `tui-dashboard` v2.3: auto-launch on project start (`cd c:/Dev/tools/tui-dashboard && pnpm dev`)
+- `visual-review`: Gemini Vision UI 분석 → 상세: [gemini-visual-review.md](gemini-visual-review.md)
 
 ## Agent Models
 
@@ -49,6 +50,7 @@
 - `app.module.ts` 등 통합 파일은 Wave 완료 후 오케스트레이터 직접 처리.
 - **에이전트 범위 명시 필수**: 프롬프트에 "이 모듈만, app.module.ts 수정 금지" 명시
 - **커밋**: 5파일 이하, 모듈당 1커밋
+- **Gemini Visual Review (MANDATORY for UI waves)**: UI 변경 포함 Wave 완료 후 반드시 `visual-review` 실행. 점수 80 미만 → 수정 후 재실행. 커밋 전 통과 필수. 상세: [gemini-visual-review.md](gemini-visual-review.md)
 
 ## Common Rules
 
@@ -69,6 +71,8 @@
 - P3: image strategy BEFORE coding, hero≠body bg
 - P4: registerAsync, unique test emails, soft delete for FK
 - P5: Wave dispatch 검증 완료. uuid@13 ESM→moduleNameMapper. 에이전트 범위 초과 주의.
+- P6: UI Wave 완료 시 Gemini visual-review 필수. justify-items-center 함정. 그라데이션 600/800이 WCAG AA 충족.
+- P6(P7~9): 이미지 교체 시 `.next` 캐시 삭제 필수. import 후 join 테이블 검증. \_count 필터=리스팅 필터 일치. 소규모 변경은 오케스트레이터 직접 Write.
 
 ## Subagent Templates → `system/agents/templates/`
 

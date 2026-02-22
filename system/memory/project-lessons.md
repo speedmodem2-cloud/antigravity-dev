@@ -45,6 +45,28 @@
 - **Sonnet-E2E 자체 수정**: login 201→[200,201] 허용, price assertion 완화 (자체 수정 1회 규칙 작동)
 - 유닛 19 pass, E2E 13 pass, 전체 빌드 0 에러
 
+## P6 (2026-02-20~21, tteok-platform, Phase 7~9)
+
+### Phase 7: UI/UX 혁신
+
+- **Wave 4개 안정 병렬**: motion, BlockButton, CascadingNav, Revolver 3D — 파일 충돌 0
+- **Visual Review 피드백 루프 정착**: P7에서 처음 도입, 이후 매 UI Wave 필수
+- 큰 컴포넌트(Revolver 204줄) → 애니메이션 로직 분리 고려
+
+### Phase 8: 상세페이지 강화
+
+- **서브에이전트 4병렬 성공**: ImageGallery, ShopCTA, MenuList, ShopInfo — 각자 파일만 수정
+- **1커밋 11파일 = 규칙 위반**: Wave 단위로 쪼개서 커밋 강화 필요
+
+### Phase 9: 이미지 + 디자인 + 버그
+
+- **Imagen 3 deprecated → 4 전환**: API endpoint 동일 구조, 모델명만 변경 (`imagen-4.0-generate-001`)
+- **이미지 교체 후 캐시 문제**: `.next` 전체 삭제 + dev server 재시작 + 브라우저 강력새로고침 필요. 파일명 동일 시 캐시 버스팅 안됨 → 파일명에 해시/버전 붙이거나 `.next/cache` 클리어 자동화
+- **이미지 생성→압축 2단계 불편**: 생성 스크립트에 sharp 압축 내장 권장 (1MB+ → 100~200KB)
+- **import 스크립트 join 테이블 누락**: `import-shops.ts`가 ShopCategory 안 만들어서 카테고리 필터 전체 불능 → import 후 join 테이블 검증 쿼리 필수
+- **\_count 필터 누락 버그**: `include: { _count: { select: { shops: true } } }` → `{ where: { status: 'ACTIVE' } }` 빠지면 수치 불일치. 카운트 쿼리와 리스팅 쿼리 필터 일치 확인
+- **오케스트레이터 직접 구현 효율**: 소규모 디자인 변경(7파일) 서브에이전트 없이 Write 병렬로 처리 → 토큰 절감
+
 ## Common
 
 - pnpm global store: hardlinks (actual disk < reported size)
