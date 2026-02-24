@@ -7,6 +7,9 @@ interface Project {
   name: string;
   status: string;
   path: string;
+  stack?: string;
+  startedAt?: string;
+  completedAt?: string;
 }
 
 interface ProjectRegistry {
@@ -42,7 +45,6 @@ function getCurrentWaveLabel(
   registryProjects: Project[],
 ): string {
   if (!activeAgentsProject) return '';
-  // Only show wave label if this project is active in agents file
   const inRegistry = registryProjects.find((p) => p.name === activeAgentsProject);
   if (inRegistry && inRegistry.status !== 'active') return '';
   try {
@@ -50,13 +52,11 @@ function getCurrentWaveLabel(
       const data: ActiveAgentsFile = JSON.parse(readFileSync(ACTIVE_AGENTS_PATH, 'utf-8'));
       const timings = data.waveTimings;
       if (!timings) return '';
-      // Find current active wave
       const activeWave = Object.entries(timings)
         .filter(([, t]) => t.startedAt && !t.completedAt)
         .map(([k]) => Number(k))
         .sort((a, b) => a - b)[0];
       if (activeWave !== undefined) return ` W${activeWave}`;
-      // All waves done — show last completed
       const lastDone = Object.entries(timings)
         .filter(([, t]) => t.completedAt)
         .map(([k]) => Number(k))
@@ -67,6 +67,13 @@ function getCurrentWaveLabel(
     /* ignore */
   }
   return '';
+}
+
+function daysSince(dateStr: string): string {
+  const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000);
+  if (days === 0) return 'today';
+  if (days === 1) return '1d ago';
+  return `${days}d ago`;
 }
 
 export const ProjectPanel: React.FC<ProjectPanelProps> = ({ registryPath }) => {
@@ -80,20 +87,17 @@ export const ProjectPanel: React.FC<ProjectPanelProps> = ({ registryPath }) => {
     }
   }
 
-  // Get currently active project from active-agents.json
   const agentProject = getActiveProjectFromAgents();
 
-  // Inject active project if missing from registry
   const allProjects = [...registry.projects];
   if (agentProject && !allProjects.find((p) => p.name === agentProject)) {
     allProjects.unshift({ name: agentProject, status: 'active', path: '' });
   } else if (agentProject) {
-    // Ensure it's marked active in our view
     const idx = allProjects.findIndex((p) => p.name === agentProject);
     if (idx !== -1) {
       const existing = allProjects[idx];
       if (existing && existing.status !== 'active') {
-        allProjects[idx] = { name: existing.name, status: 'active', path: existing.path };
+        allProjects[idx] = { ...existing, status: 'active' };
       }
     }
   }
@@ -115,14 +119,31 @@ export const ProjectPanel: React.FC<ProjectPanelProps> = ({ registryPath }) => {
       {visible.map((p) => {
         const waveLabel =
           p.status === 'active' ? getCurrentWaveLabel(agentProject, registry.projects) : '';
+        const dateLabel =
+          p.status === 'active' && p.startedAt
+            ? daysSince(p.startedAt)
+            : p.status === 'completed' && p.completedAt
+              ? daysSince(p.completedAt)
+              : '';
+
         return (
-          <Box key={p.name} gap={1}>
-            <Text color={PROJECT_STATUS_COLOR[p.status] ?? 'gray'}>
-              {PROJECT_STATUS_ICON[p.status] ?? '○'}
-            </Text>
-            <Text bold={p.status === 'active'}>{p.name}</Text>
-            <Text color={PROJECT_STATUS_COLOR[p.status] ?? 'gray'}>{p.status}</Text>
-            {waveLabel ? <Text color="cyan">{waveLabel}</Text> : null}
+          <Box key={p.name} flexDirection="column">
+            <Box gap={1}>
+              <Text color={PROJECT_STATUS_COLOR[p.status] ?? 'gray'}>
+                {PROJECT_STATUS_ICON[p.status] ?? '○'}
+              </Text>
+              <Text bold={p.status === 'active'}>{p.name}</Text>
+              <Text color={PROJECT_STATUS_COLOR[p.status] ?? 'gray'}>{p.status}</Text>
+              {waveLabel ? <Text color="cyan">{waveLabel}</Text> : null}
+              {dateLabel ? <Text color="gray"> {dateLabel}</Text> : null}
+            </Box>
+            {p.status === 'active' && p.stack && (
+              <Box marginLeft={3}>
+                <Text color="gray" dimColor>
+                  {p.stack}
+                </Text>
+              </Box>
+            )}
           </Box>
         );
       })}

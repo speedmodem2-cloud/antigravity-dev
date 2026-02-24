@@ -26,7 +26,6 @@ const PROJECTS_CLAUDE_DIR = join(CLAUDE_DIR, 'projects');
 function detectSessionModel(): string {
   try {
     if (!existsSync(PROJECTS_CLAUDE_DIR)) return '';
-    // Find the most recently modified JSONL in any project dir
     let latestFile = '';
     let latestMtime = 0;
     const projectDirs = readdirSync(PROJECTS_CLAUDE_DIR);
@@ -35,7 +34,6 @@ function detectSessionModel(): string {
       try {
         const stat = statSync(dirPath);
         if (!stat.isDirectory()) {
-          // It may be a .jsonl directly under projects
           if (dir.endsWith('.jsonl') && stat.mtimeMs > latestMtime) {
             latestMtime = stat.mtimeMs;
             latestFile = dirPath;
@@ -57,7 +55,6 @@ function detectSessionModel(): string {
     }
     if (!latestFile) return '';
     const content = readFileSync(latestFile, 'utf-8');
-    // Read from end to get the most recent model used
     const lines = content.split('\n').reverse();
     for (const line of lines) {
       if (!line.trim()) continue;
@@ -75,21 +72,60 @@ function detectSessionModel(): string {
   }
 }
 
+/** Check JSONL modification time as activity signal (works even without TodoWrite) */
+function getJsonlActivity(): { mtime: number; sessionId: string } | null {
+  try {
+    if (!existsSync(PROJECTS_CLAUDE_DIR)) return null;
+    let latestFile = '';
+    let latestMtime = 0;
+    const projectDirs = readdirSync(PROJECTS_CLAUDE_DIR);
+    for (const dir of projectDirs) {
+      const dirPath = join(PROJECTS_CLAUDE_DIR, dir);
+      try {
+        const stat = statSync(dirPath);
+        if (!stat.isDirectory()) {
+          if (dir.endsWith('.jsonl') && stat.mtimeMs > latestMtime) {
+            latestMtime = stat.mtimeMs;
+            latestFile = dirPath;
+          }
+          continue;
+        }
+        const files = readdirSync(dirPath).filter((f: string) => f.endsWith('.jsonl'));
+        for (const f of files) {
+          const fp = join(dirPath, f);
+          const ms = statSync(fp).mtimeMs;
+          if (ms > latestMtime) {
+            latestMtime = ms;
+            latestFile = fp;
+          }
+        }
+      } catch {
+        /* skip */
+      }
+    }
+    if (!latestFile || latestMtime === 0) return null;
+    const fileName = latestFile.split(/[\\/]/).pop() ?? '';
+    const sessionId = fileName.replace('.jsonl', '').slice(0, 8);
+    return { mtime: latestMtime, sessionId };
+  } catch {
+    return null;
+  }
+}
+
 function extractPhaseTag(content: string): string {
-  // "Phase 3: TASK 10-12 (레이아웃+히어로+파티클)" → "P3:TASK 10-12"
   const m = content.match(/Phase\s*(\d+)(?::\s*TASK\s*([\d-]+))?/i);
   if (m) {
     const phase = `P${m[1]}`;
     return m[2] ? `${phase}:T${m[2]}` : phase;
   }
-  // "Phase 4-5: 리뷰 + 테스트" → "P4-5"
   const m2 = content.match(/Phase\s*([\d-]+)/i);
   if (m2) return `P${m2[1]}`;
   return '';
 }
 
 export class SessionTracker {
-  private activeThresholdMs = 300_000;
+  private activeThresholdMs = 300_000; // 5 min for todo-based
+  private jsonlActiveThresholdMs = 120_000; // 2 min for JSONL-based
 
   getSession(): SessionInfo {
     const empty: SessionInfo = {
@@ -103,11 +139,64 @@ export class SessionTracker {
       sessionId: '',
     };
 
-    if (!existsSync(TODOS_DIR)) return empty;
+    // Primary: todo-based tracking
+    const todoResult = this.getFromTodos();
+
+    // Secondary: JSONL activity (works even without TodoWrite)
+    const jsonlActivity = getJsonlActivity();
+    const jsonlIsActive = jsonlActivity
+      ? Date.now() - jsonlActivity.mtime < this.jsonlActiveThresholdMs
+      : false;
+
+    // If todo data exists, use it but supplement with JSONL activity
+    if (todoResult && todoResult.totalCount > 0) {
+      if (!todoResult.active && jsonlIsActive) {
+        todoResult.active = true;
+        todoResult.lastActivity = new Date(jsonlActivity!.mtime);
+      }
+      todoResult.model = detectSessionModel();
+      return todoResult;
+    }
+
+    // Fallback: no todos, but JSONL shows active
+    if (jsonlIsActive && jsonlActivity) {
+      return {
+        active: true,
+        lastActivity: new Date(jsonlActivity.mtime),
+        currentTask: 'Working...',
+        phaseTag: '',
+        todos: [],
+        completedCount: 0,
+        totalCount: 0,
+        sessionId: jsonlActivity.sessionId,
+        model: detectSessionModel(),
+      };
+    }
+
+    // JSONL exists but not active — show IDLE with session info
+    if (jsonlActivity && Date.now() - jsonlActivity.mtime < this.activeThresholdMs) {
+      return {
+        active: false,
+        lastActivity: new Date(jsonlActivity.mtime),
+        currentTask: '-',
+        phaseTag: '',
+        todos: [],
+        completedCount: 0,
+        totalCount: 0,
+        sessionId: jsonlActivity.sessionId,
+        model: detectSessionModel(),
+      };
+    }
+
+    return { ...empty, model: detectSessionModel() };
+  }
+
+  private getFromTodos(): SessionInfo | null {
+    if (!existsSync(TODOS_DIR)) return null;
 
     try {
       const files = readdirSync(TODOS_DIR).filter((f: string) => f.endsWith('.json'));
-      if (files.length === 0) return empty;
+      if (files.length === 0) return null;
 
       let latest = '';
       let latestMtime = 0;
@@ -120,10 +209,10 @@ export class SessionTracker {
         }
       }
 
-      if (!latest) return empty;
+      if (!latest) return null;
 
       const todos: SessionTodo[] = JSON.parse(readFileSync(latest, 'utf-8'));
-      if (!Array.isArray(todos)) return empty;
+      if (!Array.isArray(todos)) return null;
 
       const lastActivity = new Date(latestMtime);
       const isActive = Date.now() - latestMtime < this.activeThresholdMs;
@@ -145,10 +234,9 @@ export class SessionTracker {
         completedCount,
         totalCount: todos.length,
         sessionId,
-        model: detectSessionModel(),
       };
     } catch {
-      return empty;
+      return null;
     }
   }
 }

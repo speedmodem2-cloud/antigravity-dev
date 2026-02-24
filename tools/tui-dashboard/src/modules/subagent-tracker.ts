@@ -37,10 +37,19 @@ export class SubagentTracker {
     const now = new Date();
     const result: AgentState[] = [];
 
-    for (const task of this.tasks.values()) {
-      // Only show tasks from last 10 minutes (cleanup stale)
+    // Sort by startedAt descending, keep recent 5 completed always visible
+    const sorted = [...this.tasks.values()].sort(
+      (a, b) => b.startedAt.getTime() - a.startedAt.getTime(),
+    );
+    let completedShown = 0;
+
+    for (const task of sorted) {
       const age = now.getTime() - task.startedAt.getTime();
-      if (age > 600_000 && task.completed) continue;
+      // Keep completed tasks for 30 min, or always keep last 5 completed
+      if (task.completed) {
+        completedShown++;
+        if (age > 1_800_000 && completedShown > 5) continue;
+      }
 
       const status = task.completed ? 'idle' : 'running';
       result.push({

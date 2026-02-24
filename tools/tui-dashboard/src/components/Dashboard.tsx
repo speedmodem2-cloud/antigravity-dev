@@ -161,7 +161,14 @@ export const Dashboard: React.FC = () => {
     const initialWindow = getProjectWindow();
     tokenTracker.setTimeWindow(initialWindow.startedAt, initialWindow.endedAt);
 
-    const interval = setInterval(() => {
+    // Fast polling (500ms) for first 10s, then normal (2s)
+    const FAST_MS = 500;
+    const NORMAL_MS = 2000;
+    const FAST_DURATION = 10000;
+    const startedAt = Date.now();
+    let intervalId: ReturnType<typeof setInterval>;
+
+    const tick = () => {
       // Detect project change → auto-reset
       const currentProject = getActiveProjectName();
       if (currentProject && currentProject !== lastProjectRef.current) {
@@ -233,7 +240,15 @@ export const Dashboard: React.FC = () => {
       setIsWaveBased(getIsWaveBased());
       checkProjects();
       setClock(new Date());
-    }, 2000);
+
+      // Switch from fast to normal polling after FAST_DURATION
+      if (Date.now() - startedAt > FAST_DURATION) {
+        clearInterval(intervalId);
+        intervalId = setInterval(tick, NORMAL_MS);
+      }
+    };
+
+    intervalId = setInterval(tick, FAST_MS);
 
     const initialProjPath = getActiveProjectPath();
     const initWave = statusTracker.getAgents();
@@ -248,7 +263,7 @@ export const Dashboard: React.FC = () => {
     checkProjects();
 
     return () => {
-      clearInterval(interval);
+      clearInterval(intervalId);
       statusTracker.stop();
       subagentTracker.stop();
       tokenTracker.stopWatching();
