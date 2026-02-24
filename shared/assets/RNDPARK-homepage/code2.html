@@ -1,0 +1,550 @@
+<!doctype html>
+<html class="dark" lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>RNDPARK | Enhanced Cyberpunk Glass UI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Noto+Sans+KR:wght@300;400;500;700;900&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#0db9f2',
+              'secondary-purple': '#bc13fe',
+              'background-light': '#f5f8f8',
+              'background-dark': '#050508',
+              'card-dark': '#161b22',
+            },
+            fontFamily: {
+              display: ['Inter', 'Noto Sans KR', 'sans-serif'],
+            },
+            borderRadius: {
+              DEFAULT: '0.25rem',
+              lg: '0.5rem',
+              xl: '1rem',
+              full: '9999px',
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/tailwindcss">
+      :root {
+        --primary-glow: #0db9f2;
+        --purple-glow: #bc13fe;
+      }
+      body {
+        font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        background-color: #050508;
+        color: #f1f5f9;
+      }
+      .cyber-grid {
+        background-image:
+          linear-gradient(to right, rgba(13, 185, 242, 0.08) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(13, 185, 242, 0.08) 1px, transparent 1px);
+        background-size: 50px 50px;
+      }
+      .glass-nav {
+        backdrop-filter: blur(24px) saturate(180%);
+        background-color: rgba(5, 5, 8, 0.5);
+        border-bottom: 1px solid rgba(13, 185, 242, 0.3);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+      }
+      .glass-card {
+        backdrop-filter: blur(20px) saturate(160%);
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        transition:
+          transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+          box-shadow 0.4s ease,
+          border-color 0.4s ease;
+      }
+      .neon-border-blue {
+        border: 1.5px solid rgba(13, 185, 242, 0.6);
+        box-shadow:
+          0 0 15px rgba(13, 185, 242, 0.2),
+          inset 0 0 10px rgba(13, 185, 242, 0.1);
+      }
+      .neon-border-purple {
+        border: 1.5px solid rgba(188, 19, 254, 0.6);
+        box-shadow:
+          0 0 15px rgba(188, 19, 254, 0.2),
+          inset 0 0 10px rgba(188, 19, 254, 0.1);
+      }
+      .glass-card:hover {
+        transform: translateY(-10px) rotateX(2deg);
+        border-color: rgba(13, 185, 242, 0.8);
+        box-shadow:
+          0 20px 40px rgba(0, 0, 0, 0.4),
+          0 0 25px rgba(13, 185, 242, 0.4);
+      }
+      .glass-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+          45deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.03) 30%,
+          rgba(255, 255, 255, 0.08) 50%,
+          rgba(255, 255, 255, 0.03) 70%,
+          transparent 100%
+        );
+        transform: rotate(45deg);
+        transition: 0.5s;
+        pointer-events: none;
+      }
+      .glass-card:hover::before {
+        left: 100%;
+        top: 100%;
+      }
+      .intense-glow-blue {
+        box-shadow:
+          0 0 25px rgba(13, 185, 242, 0.6),
+          0 0 50px rgba(13, 185, 242, 0.2);
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      }
+      .intense-glow-text {
+        text-shadow:
+          0 0 15px rgba(13, 185, 242, 0.8),
+          0 0 30px rgba(13, 185, 242, 0.4);
+      }
+      .logo-glow {
+        filter: drop-shadow(0 0 8px rgba(13, 185, 242, 0.9));
+      }
+      .scanline {
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(to right, transparent, rgba(13, 185, 242, 0.4), transparent);
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        opacity: 0.5;
+      }
+      .reflection-layer {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 40%,
+          transparent 60%,
+          rgba(255, 255, 255, 0.05) 100%
+        );
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body class="bg-background-dark min-h-screen relative overflow-x-hidden">
+    <div class="fixed inset-0 cyber-grid pointer-events-none"></div>
+    <div
+      class="fixed top-[-10%] left-[-5%] w-[50%] h-[50%] bg-primary/20 blur-[150px] rounded-full pointer-events-none"
+    ></div>
+    <div
+      class="fixed bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-secondary-purple/20 blur-[150px] rounded-full pointer-events-none"
+    ></div>
+    <header class="fixed top-0 left-0 w-full z-50 glass-nav">
+      <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-3 group">
+          <div
+            class="w-10 h-10 flex items-center justify-center bg-primary rounded-lg intense-glow-blue"
+          >
+            <span class="material-symbols-outlined text-background-dark font-bold"
+              >settings_input_component</span
+            >
+          </div>
+          <h1 class="text-2xl font-black tracking-tighter text-white logo-glow">
+            RND<span class="text-primary">PARK</span>
+          </h1>
+        </div>
+        <nav class="hidden md:flex items-center gap-10">
+          <a
+            class="text-sm font-bold text-slate-200 hover:text-primary tracking-widest uppercase transition-all hover:scale-105"
+            href="#"
+            >Home</a
+          >
+          <a
+            class="text-sm font-bold text-slate-200 hover:text-primary tracking-widest uppercase transition-all hover:scale-105"
+            href="#"
+            >Technology</a
+          >
+          <a
+            class="text-sm font-bold text-slate-200 hover:text-primary tracking-widest uppercase transition-all hover:scale-105"
+            href="#"
+            >Products</a
+          >
+          <a
+            class="text-sm font-bold text-slate-200 hover:text-primary tracking-widest uppercase transition-all hover:scale-105"
+            href="#"
+            >Contact</a
+          >
+        </nav>
+        <div class="flex items-center gap-4">
+          <button
+            class="px-4 py-2 rounded-lg border border-primary/40 text-xs font-bold text-primary bg-primary/5 hover:bg-primary/20 transition-all backdrop-blur-md"
+          >
+            EN / KR
+          </button>
+          <div
+            class="w-10 h-10 rounded-full border-2 border-primary/50 overflow-hidden intense-glow-blue"
+          >
+            <img
+              class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all"
+              data-alt="Futuristic cyborg character profile icon"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCME2Q3KiN7geNzmMAf1O6f72RXzrUKkfqmT23TE6iss8lX14_xDIIy6Y-zBrd24X3Ousi71LgVmCFmfLPc0LYuqwM_1E0d1FcRr1qeaOW-h_mw2HuTqWQR1xPN-fzWpJL7aaPKESKDSktBkUPC4l6HFt0yzKRZntfUSQCHP6smUbfzSyb2ZuWjPdtRe2eU_-vG90jQ-LngGT6joAO_tXrmjfUt9eloDTLL_hBvJvTNFv5D9Ve-43ZMrfG64XlDNN1N8y_yEz2MPDQ"
+            />
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="relative pt-20">
+      <section
+        class="min-h-[90vh] flex flex-col items-center justify-center px-6 relative overflow-hidden"
+      >
+        <div
+          class="absolute inset-0 z-0 flex items-center justify-center opacity-30 pointer-events-none"
+        >
+          <div
+            class="w-[800px] h-[800px] border-2 border-primary/20 rounded-full animate-pulse shadow-[0_0_100px_rgba(13,185,242,0.1)]"
+          ></div>
+        </div>
+        <div class="z-10 text-center max-w-4xl mx-auto">
+          <div
+            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/40 text-primary text-[11px] font-black uppercase tracking-[0.4em] mb-10 backdrop-blur-xl"
+          >
+            <span class="relative flex h-2.5 w-2.5">
+              <span
+                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"
+              ></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+            </span>
+            Next-Gen Industrial Systems
+          </div>
+          <h1
+            class="text-7xl md:text-9xl font-black text-white mb-8 tracking-tighter leading-none intense-glow-text"
+          >
+            알앤디파크
+          </h1>
+          <p
+            class="text-2xl md:text-3xl text-slate-300 font-light tracking-wide mb-14 max-w-3xl mx-auto leading-relaxed"
+          >
+            Smart Factory Solutions for <br class="hidden md:block" />
+            <span class="text-primary font-bold">Modern Tteok Production</span>
+          </p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-8">
+            <button
+              class="group relative flex items-center justify-center min-w-[240px] h-16 bg-primary text-background-dark font-black uppercase tracking-widest rounded-xl intense-glow-blue overflow-hidden transition-all hover:scale-105 active:scale-95"
+            >
+              <span class="relative z-10 flex items-center gap-3 text-lg">
+                스마트 팩토리 입장
+                <span class="material-symbols-outlined text-[20px] font-bold"
+                  >arrow_forward_ios</span
+                >
+              </span>
+              <div
+                class="absolute inset-0 bg-white/30 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+              ></div>
+            </button>
+            <button
+              class="group flex items-center justify-center min-w-[240px] h-16 bg-background-dark/40 backdrop-blur-xl text-secondary-purple font-black uppercase tracking-widest rounded-xl neon-border-purple transition-all hover:bg-secondary-purple/20 hover:scale-105 active:scale-95"
+            >
+              <span class="logo-glow">사업분야 더보기</span>
+            </button>
+          </div>
+        </div>
+      </section>
+      <section class="py-32 px-6 max-w-7xl mx-auto relative">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div class="glass-card rounded-2xl p-10 neon-border-blue group">
+            <div class="reflection-layer"></div>
+            <div class="scanline"></div>
+            <div
+              class="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-60 transition-opacity"
+            >
+              <span class="material-symbols-outlined text-7xl text-primary">verified_user</span>
+            </div>
+            <div class="mb-8">
+              <span class="material-symbols-outlined text-5xl text-primary logo-glow"
+                >description</span
+              >
+            </div>
+            <h3 class="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px] mb-4">
+              Technical Assets
+            </h3>
+            <div class="flex items-baseline gap-2">
+              <span class="text-6xl font-black text-white tracking-tighter logo-glow">15+</span>
+              <span class="text-primary font-black uppercase text-sm tracking-widest">Patents</span>
+            </div>
+            <div
+              class="mt-10 pt-8 border-t border-white/10 flex items-center gap-3 text-xs font-bold text-slate-300"
+            >
+              <span class="material-symbols-outlined text-sm text-green-400">check_circle</span>
+              Verified Intellectual Property
+            </div>
+          </div>
+          <div class="glass-card rounded-2xl p-10 neon-border-purple group">
+            <div class="reflection-layer"></div>
+            <div class="scanline"></div>
+            <div
+              class="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-60 transition-opacity"
+            >
+              <span class="material-symbols-outlined text-7xl text-secondary-purple"
+                >precision_manufacturing</span
+              >
+            </div>
+            <div class="mb-8">
+              <span class="material-symbols-outlined text-5xl text-secondary-purple logo-glow"
+                >precision_manufacturing</span
+              >
+            </div>
+            <h3 class="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px] mb-4">
+              Production Capacity
+            </h3>
+            <div class="flex items-baseline gap-2">
+              <span class="text-6xl font-black text-white tracking-tighter logo-glow">50+</span>
+              <span class="text-secondary-purple font-black uppercase text-sm tracking-widest"
+                >Products</span
+              >
+            </div>
+            <div
+              class="mt-10 pt-8 border-t border-white/10 flex items-center gap-3 text-xs font-bold text-slate-300"
+            >
+              <span class="material-symbols-outlined text-sm text-green-400">check_circle</span>
+              Active Machinery Modules
+            </div>
+          </div>
+          <div class="glass-card rounded-2xl p-10 neon-border-blue group">
+            <div class="reflection-layer"></div>
+            <div class="scanline"></div>
+            <div
+              class="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-60 transition-opacity"
+            >
+              <span class="material-symbols-outlined text-7xl text-primary">history</span>
+            </div>
+            <div class="mb-8">
+              <span class="material-symbols-outlined text-5xl text-primary logo-glow"
+                >calendar_today</span
+              >
+            </div>
+            <h3 class="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px] mb-4">
+              Industry Legacy
+            </h3>
+            <div class="flex items-baseline gap-2">
+              <span class="text-6xl font-black text-white tracking-tighter logo-glow">20</span>
+              <span class="text-primary font-black uppercase text-sm tracking-widest">Years</span>
+            </div>
+            <div
+              class="mt-10 pt-8 border-t border-white/10 flex items-center gap-3 text-xs font-bold text-slate-300"
+            >
+              <span class="material-symbols-outlined text-sm text-green-400">check_circle</span>
+              Since Initial R&amp;D Launch
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="py-32 px-6">
+        <div class="max-w-7xl mx-auto glass-card rounded-3xl p-12 neon-border-blue overflow-hidden">
+          <div class="reflection-layer"></div>
+          <div class="flex flex-col lg:flex-row items-center gap-16">
+            <div
+              class="w-full lg:w-1/2 rounded-2xl overflow-hidden relative group aspect-video neon-border-blue"
+            >
+              <img
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 brightness-75 group-hover:brightness-100"
+                data-alt="Modern high-tech industrial robot arm in dark factory setting"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8X5WKOrQKSNDJI3NlBdFBfo8zg7GFZkgT_3kdlA3-voOv-dwfNrwxXVXpK6k7_XrFRvUusy85rZOzny_7nM53fzU4GbgWK5SkvAtrNoj-m7IojmDTK6umD0CZgfTVedf2KLxMo4sEao0jpqZye9XK27hh-MhCdAtz3OMRrN8V6JP65NPf-m0iIXoz8sszR-D2PltE7wW3mI3rh9xTXB1cXRSTXOuNqieC8cMt5ehKcsczBGpmqANk8iuS2bAODqvw8gS8bxV3iDQ"
+              />
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent opacity-60"
+              ></div>
+              <div class="absolute bottom-6 left-6 flex items-center gap-4">
+                <div
+                  class="px-3 py-1 bg-primary text-background-dark text-[10px] font-black uppercase rounded shadow-[0_0_15px_rgba(13,185,242,0.8)]"
+                >
+                  Live Stream
+                </div>
+                <span class="text-white font-bold text-sm tracking-[0.3em] logo-glow"
+                  >UNIT_07_CORE</span
+                >
+              </div>
+            </div>
+            <div class="w-full lg:w-1/2">
+              <h2 class="text-primary font-black uppercase tracking-[0.4em] text-sm mb-6 logo-glow">
+                Core Technology
+              </h2>
+              <h3
+                class="text-5xl md:text-6xl font-black text-white mb-8 leading-tight tracking-tight"
+              >
+                AI-Integrated <br />
+                Precision Engineering
+              </h3>
+              <p class="text-slate-300 text-xl mb-12 leading-relaxed font-light">
+                Leading the future of traditional Korean food production with high-precision AI
+                sensors and automated smart-grid systems. Our machinery ensures perfect texture and
+                hygiene standards for the global market.
+              </p>
+              <ul class="space-y-6">
+                <li
+                  class="flex items-center gap-4 text-white font-bold tracking-wide group cursor-default"
+                >
+                  <span
+                    class="material-symbols-outlined text-primary text-3xl logo-glow group-hover:scale-125 transition-transform"
+                    >memory</span
+                  >
+                  Neural-Link Texture Control
+                </li>
+                <li
+                  class="flex items-center gap-4 text-white font-bold tracking-wide group cursor-default"
+                >
+                  <span
+                    class="material-symbols-outlined text-primary text-3xl logo-glow group-hover:scale-125 transition-transform"
+                    >eco</span
+                  >
+                  Zero-Waste Smart Manufacturing
+                </li>
+                <li
+                  class="flex items-center gap-4 text-white font-bold tracking-wide group cursor-default"
+                >
+                  <span
+                    class="material-symbols-outlined text-primary text-3xl logo-glow group-hover:scale-125 transition-transform"
+                    >public</span
+                  >
+                  Global Export Compliance (CE/ISO)
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer
+      class="mt-32 border-t border-primary/20 bg-background-dark/95 backdrop-blur-3xl pt-24 pb-12 px-6"
+    >
+      <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-16 mb-24">
+          <div class="col-span-1 md:col-span-1">
+            <div class="flex items-center gap-3 mb-8">
+              <div
+                class="w-8 h-8 bg-primary rounded-lg intense-glow-blue flex items-center justify-center"
+              >
+                <span class="material-symbols-outlined text-background-dark text-lg font-black"
+                  >settings_input_component</span
+                >
+              </div>
+              <h2 class="text-2xl font-black text-white tracking-tighter logo-glow">RNDPARK</h2>
+            </div>
+            <p class="text-slate-400 text-sm leading-relaxed font-medium">
+              Pioneering the future of smart food processing through advanced robotics and AI
+              integration. Building the industrial infrastructure for the next century.
+            </p>
+          </div>
+          <div>
+            <h4 class="text-white font-black text-xs uppercase tracking-[0.3em] mb-8">
+              Navigation
+            </h4>
+            <ul class="space-y-5 text-slate-400 text-sm font-bold">
+              <li>
+                <a
+                  class="hover:text-primary hover:translate-x-2 transition-all inline-block"
+                  href="#"
+                  >Technology Stack</a
+                >
+              </li>
+              <li>
+                <a
+                  class="hover:text-primary hover:translate-x-2 transition-all inline-block"
+                  href="#"
+                  >Product Catalog</a
+                >
+              </li>
+              <li>
+                <a
+                  class="hover:text-primary hover:translate-x-2 transition-all inline-block"
+                  href="#"
+                  >Case Studies</a
+                >
+              </li>
+              <li>
+                <a
+                  class="hover:text-primary hover:translate-x-2 transition-all inline-block"
+                  href="#"
+                  >Global Logistics</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-white font-black text-xs uppercase tracking-[0.3em] mb-8">Connect</h4>
+            <ul class="space-y-5 text-slate-400 text-sm font-bold">
+              <li>
+                <a class="hover:text-primary transition-colors flex items-center gap-2" href="#"
+                  >LinkedIn
+                  <span class="text-[10px] border border-slate-700 px-1 rounded">/rndpark</span></a
+                >
+              </li>
+              <li>
+                <a class="hover:text-primary transition-colors flex items-center gap-2" href="#"
+                  >Twitter
+                  <span class="text-[10px] border border-slate-700 px-1 rounded"
+                    >@rndpark_hq</span
+                  ></a
+                >
+              </li>
+              <li>
+                <a class="hover:text-primary transition-colors flex items-center gap-2" href="#"
+                  >YouTube
+                  <span class="text-[10px] border border-slate-700 px-1 rounded">RND-Lab</span></a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-white font-black text-xs uppercase tracking-[0.3em] mb-8">
+              Newsletter
+            </h4>
+            <div class="flex gap-2">
+              <input
+                class="bg-background-dark/50 border-2 border-slate-800 rounded-lg px-5 py-3 text-sm w-full focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-slate-600 font-bold"
+                placeholder="ACCESS_ID@SYSTEM.COM"
+                type="email"
+              />
+              <button
+                class="bg-primary text-background-dark px-4 rounded-lg hover:scale-105 transition-transform intense-glow-blue"
+              >
+                <span class="material-symbols-outlined font-black">send</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          class="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6"
+        >
+          <div class="text-[11px] font-mono text-slate-500 uppercase tracking-[0.3em]">
+            © 2024 RNDPARK SYSTEMS INC. //
+            <span class="text-primary/70">SERIAL_NO: 882-99-RP</span> // STATUS:
+            <span class="text-green-500">ONLINE</span>
+          </div>
+          <div class="flex gap-10 text-[11px] font-mono text-slate-500 uppercase tracking-[0.3em]">
+            <a class="hover:text-primary transition-colors" href="#">Privacy_Protocol</a>
+            <a class="hover:text-primary transition-colors" href="#">Term_Conditions</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

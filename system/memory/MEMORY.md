@@ -13,6 +13,7 @@
 ## Pre-flight
 
 - **TUI 항상 실행 (MANDATORY)**: 세션 시작 시 즉시 `cd c:/Dev/tools/tui-dashboard && pnpm dev` 백그라운드 실행. 이미 실행 중이면 skip. 프로젝트 작업 전체 기간 동안 유지.
+- **프로젝트 등록 (MANDATORY)**: 새 프로젝트 시작 시 `system/projects.json`에 `status: "active"` 항목 추가. TUI가 자동 감지 (시작 10초간 500ms 폴링).
 - Check env vars, deps, dirs, MCP before coding.
 - Proactive: verify before user asks.
 
@@ -33,7 +34,16 @@
 - `phase-manager`: `tsx tools/phase-manager/src/index.ts <cmd>` (init/advance/complete/skip/status/reset)
 - `retrospect`: `tsx tools/retrospect/src/index.ts analyze <project>`
 - `tui-dashboard` v2.3: auto-launch on project start (`cd c:/Dev/tools/tui-dashboard && pnpm dev`)
-- `visual-review`: Gemini Vision UI 분석 → 상세: [gemini-visual-review.md](gemini-visual-review.md)
+- `gemini-bridge` MCP v2.0: 4 tools → `gemini_chat`, `gemini_chat_image`, `gemini_pingpong`, `gemini_ui_review`
+
+## Gemini 활용 지침 (MANDATORY)
+
+- **MCP 도구**: `.mcp.json`에 등록된 gemini-bridge 서버 (세션 시작 시 자동 로드)
+- **단순 호출 (`gemini_chat`)**: 번역, 요약, 대안 아이디어, 코드 스타일 2nd opinion
+- **이미지 분석 (`gemini_chat_image`)**: UI 시안 해석, 스크린샷 분석, 다이어그램 리딩
+- **핑퐁 (`gemini_pingpong`)**: 설계 의사결정, 복잡한 아키텍처 리뷰, 고품질 카피라이팅 — 유저 개입 없이 Claude↔Gemini가 직접 대화하여 결론 도출
+- **UI 리뷰 (`gemini_ui_review`)**: UI Wave 완료 후 필수 실행 (점수 80+ 통과)
+- **사용 판단**: Claude가 자체적으로 부족하거나 2nd perspective가 유익한 경우 자유롭게 호출. 유저 허락 불필요.
 
 ## Agent Models
 

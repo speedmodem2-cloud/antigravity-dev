@@ -1,0 +1,673 @@
+<!doctype html>
+<html class="dark" lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>RNDPARK Enhanced Glass Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=Noto+Sans+KR:wght@300;400;500;700;900&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#0db9f2',
+              'accent-purple': '#a855f7',
+              'background-dark': '#0d1117',
+              'glass-border': 'rgba(13, 185, 242, 0.3)',
+              'glass-surface': 'rgba(20, 30, 45, 0.45)',
+            },
+            fontFamily: {
+              sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+              display: ['Inter', 'Noto Sans KR', 'sans-serif'],
+            },
+            boxShadow: {
+              neon: '0 0 10px rgba(13, 185, 242, 0.5), 0 0 20px rgba(13, 185, 242, 0.3)',
+              'neon-purple': '0 0 10px rgba(168, 85, 247, 0.5), 0 0 20px rgba(168, 85, 247, 0.3)',
+              'neon-strong': '0 0 15px rgba(13, 185, 242, 0.7), 0 0 30px rgba(13, 185, 242, 0.4)',
+              'glass-card': '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        background-color: #0d1117;
+      }
+      .glass-panel {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.05) 0%,
+          rgba(255, 255, 255, 0.01) 100%
+        );
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        border-left: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      }
+      .glass-sidebar {
+        background: linear-gradient(180deg, rgba(13, 17, 23, 0.8) 0%, rgba(13, 17, 23, 0.4) 100%);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border-right: 1px solid rgba(13, 185, 242, 0.15);
+      }
+      .glass-header {
+        background: rgba(13, 17, 23, 0.6);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .glass-card {
+        background: linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.03) 0%,
+          rgba(20, 30, 45, 0.4) 100%
+        );
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(13, 185, 242, 0.15);
+        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .glass-card:hover {
+        border-color: rgba(13, 185, 242, 0.5);
+        box-shadow:
+          0 0 20px rgba(13, 185, 242, 0.15),
+          0 0 40px rgba(168, 85, 247, 0.1);
+        transform: translateY(-5px);
+      }
+      .glass-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 0.75rem;
+        padding: 1px;
+        background: linear-gradient(
+          45deg,
+          transparent,
+          rgba(13, 185, 242, 0.6),
+          rgba(168, 85, 247, 0.6),
+          transparent
+        );
+        -webkit-mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+        opacity: 0.5;
+        transition: opacity 0.4s ease;
+      }
+      .glass-card:hover::before {
+        opacity: 1;
+      }
+      .holographic-shine {
+        background: linear-gradient(
+          115deg,
+          transparent 0%,
+          transparent 30%,
+          rgba(255, 255, 255, 0.1) 45%,
+          rgba(13, 185, 242, 0.2) 50%,
+          rgba(168, 85, 247, 0.2) 55%,
+          rgba(255, 255, 255, 0.1) 60%,
+          transparent 70%,
+          transparent 100%
+        );
+        background-size: 200% 100%;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+      }
+      @keyframes pulse-glow {
+        0%,
+        100% {
+          box-shadow: 0 0 10px rgba(13, 185, 242, 0.5);
+        }
+        50% {
+          box-shadow:
+            0 0 25px rgba(13, 185, 242, 0.8),
+            0 0 10px rgba(255, 255, 255, 0.5);
+        }
+      }
+      .pulse-btn {
+        animation: pulse-glow 2s infinite;
+      }
+      .neon-text-glow {
+        text-shadow: 0 0 5px rgba(13, 185, 242, 0.5);
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0d1117;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(13, 185, 242, 0.3);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(13, 185, 242, 0.6);
+      }
+      .search-glass {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(4px);
+      }
+      .search-glass:focus-within {
+        background: rgba(13, 185, 242, 0.05);
+        border-color: rgba(13, 185, 242, 0.5);
+        box-shadow: 0 0 15px rgba(13, 185, 242, 0.2);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-dark text-slate-100 min-h-screen overflow-x-hidden selection:bg-primary selection:text-white"
+  >
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+      <div
+        class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[150px]"
+      ></div>
+      <div
+        class="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-accent-purple/10 rounded-full blur-[150px]"
+      ></div>
+      <div
+        class="absolute top-[20%] right-[20%] w-[30%] h-[30%] bg-blue-600/5 rounded-full blur-[100px]"
+      ></div>
+    </div>
+    <div class="flex h-screen overflow-hidden">
+      <aside class="w-72 glass-sidebar flex flex-col z-30 relative shadow-2xl">
+        <div class="p-6 flex items-center gap-3 border-b border-white/5">
+          <div
+            class="size-10 bg-primary/20 border border-primary/50 rounded-lg flex items-center justify-center shadow-neon"
+          >
+            <span class="material-symbols-outlined text-primary font-bold">factory</span>
+          </div>
+          <div>
+            <h1 class="font-black text-xl tracking-tighter text-white neon-text-glow">RNDPARK</h1>
+            <p class="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">
+              Control Center
+            </p>
+          </div>
+        </div>
+        <nav class="flex-1 px-4 space-y-2 mt-6">
+          <div
+            class="text-[11px] font-bold text-slate-400 uppercase px-3 py-2 tracking-widest flex items-center gap-2"
+          >
+            <span class="w-1 h-1 bg-primary rounded-full"></span> Main Modules
+          </div>
+          <a
+            class="flex items-center gap-3 px-3 py-3 rounded-lg bg-gradient-to-r from-primary/20 to-transparent border-l-2 border-primary text-white shadow-neon group relative overflow-hidden"
+            href="#"
+          >
+            <div
+              class="absolute inset-0 bg-primary/5 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500"
+            ></div>
+            <span class="material-symbols-outlined text-primary relative z-10"
+              >precision_manufacturing</span
+            >
+            <span class="text-sm font-bold relative z-10">Tteok Production Line</span>
+          </a>
+          <a
+            class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition-all text-slate-400 hover:text-white group border border-transparent hover:border-white/10"
+            href="#"
+          >
+            <span class="material-symbols-outlined group-hover:text-accent-purple transition-colors"
+              >settings_suggest</span
+            >
+            <span class="text-sm font-medium">Maintenance</span>
+          </a>
+          <a
+            class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition-all text-slate-400 hover:text-white group border border-transparent hover:border-white/10"
+            href="#"
+          >
+            <span class="material-symbols-outlined group-hover:text-accent-purple transition-colors"
+              >analytics</span
+            >
+            <span class="text-sm font-medium">Efficiency Analytics</span>
+          </a>
+          <div
+            class="pt-8 text-[11px] font-bold text-slate-400 uppercase px-3 py-2 tracking-widest flex items-center gap-2"
+          >
+            <span class="w-1 h-1 bg-accent-purple rounded-full"></span> System Health
+          </div>
+          <div class="px-3 py-4 bg-black/20 rounded-xl border border-white/5 backdrop-blur-sm mx-1">
+            <div class="flex flex-col gap-3">
+              <div class="flex justify-between text-xs items-center">
+                <span class="text-slate-400 font-medium">Line Load</span>
+                <span
+                  class="text-primary font-bold bg-primary/10 px-2 py-0.5 rounded border border-primary/20"
+                  >78%</span
+                >
+              </div>
+              <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden relative">
+                <div class="absolute inset-0 bg-slate-800"></div>
+                <div
+                  class="h-full bg-gradient-to-r from-primary to-accent-purple shadow-neon relative z-10"
+                  style="width: 78%"
+                ></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+                <span>IDLE</span>
+                <span>MAX</span>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <div class="p-6 border-t border-white/5 bg-black/20">
+          <button
+            class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-500/30 hover:border-emerald-500/60 transition-all group"
+          >
+            <span
+              class="material-symbols-outlined text-emerald-400 text-sm group-hover:animate-pulse"
+              >bolt</span
+            >
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-100"
+              >System Status: Active</span
+            >
+          </button>
+        </div>
+      </aside>
+      <main class="flex-1 flex flex-col relative overflow-hidden z-10">
+        <header class="glass-header sticky top-0 z-40">
+          <div class="px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="p-2 bg-white/5 rounded-lg border border-white/10">
+                <span class="material-symbols-outlined text-primary">sensors</span>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold tracking-tight text-white">Tteok Production Line</h2>
+                <div class="flex items-center text-xs gap-2 mt-0.5">
+                  <span class="text-slate-500">Process Node:</span>
+                  <span
+                    class="text-primary font-bold bg-primary/10 px-1.5 rounded border border-primary/20"
+                    >증숙(Steaming)</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-6">
+              <div class="relative group search-glass rounded-xl transition-all duration-300">
+                <span
+                  class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors"
+                  >search</span
+                >
+                <input
+                  class="bg-transparent border-none focus:ring-0 pl-10 pr-4 py-2.5 w-64 text-sm text-white placeholder:text-slate-500 font-medium"
+                  placeholder="Search model or specs..."
+                  type="text"
+                />
+              </div>
+              <button
+                class="pulse-btn bg-gradient-to-r from-primary to-blue-600 hover:from-primary hover:to-primary text-white font-bold text-sm px-6 py-2.5 rounded-xl transition-all flex items-center gap-2 shadow-neon-strong border border-white/20"
+              >
+                빠른 문의 <span class="material-symbols-outlined text-sm">send</span>
+              </button>
+              <div class="h-8 w-px bg-white/10 mx-2"></div>
+              <div class="flex items-center gap-3">
+                <button
+                  class="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors relative"
+                >
+                  <span
+                    class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border border-black shadow-neon"
+                  ></span>
+                  <span class="material-symbols-outlined">notifications</span>
+                </button>
+                <div
+                  class="size-10 rounded-full bg-gradient-to-tr from-primary/20 to-accent-purple/20 border border-white/20 p-0.5 shadow-neon"
+                >
+                  <img
+                    alt="Operator profile"
+                    class="rounded-full w-full h-full object-cover"
+                    data-alt="Technical operator profile avatar"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzWXRLEqeIpIBH1w0hpI-gE_06J20mUFuhw6vXIS0H14dxdFo0-qao5M_qNNc5KGvCwYPbiVx1PVnuWJbgJODGUMyoZ0dqhpvB8WJy65W7joJsOVLGy11M5wjV3FUtWl6u80CapVi31Q-nanLdL3KjAeKGA1b3a8-bLGngdU7C0K_wG9TmrOfFYc2gGWW-cf-xTAN_KucEvNk-kXNl6omywU3eYVLYoUI8W4jkuBjvXJB6Jv4xQnLv_obUWkiEAG0aZj2Aqe2rZp0"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="px-8 flex items-center gap-1">
+            <a
+              class="flex-1 py-3 text-center text-sm font-bold text-slate-500 hover:text-white hover:bg-white/5 rounded-t-lg transition-colors relative group border-b-2 border-transparent"
+              href="#"
+            >
+              침지(Soaking)
+            </a>
+            <div class="text-slate-700 select-none">›</div>
+            <a
+              class="flex-1 py-3 text-center text-sm font-bold text-slate-500 hover:text-white hover:bg-white/5 rounded-t-lg transition-colors relative group border-b-2 border-transparent"
+              href="#"
+            >
+              분쇄(Grinding)
+            </a>
+            <div class="text-slate-700 select-none">›</div>
+            <a
+              class="flex-1 py-3 text-center text-sm font-bold text-primary bg-primary/5 rounded-t-lg relative group border-b-2 border-primary shadow-[0_4px_20px_-5px_rgba(13,185,242,0.5)]"
+              href="#"
+            >
+              증숙(Steaming)
+              <div
+                class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"
+              ></div>
+            </a>
+            <div class="text-slate-700 select-none">›</div>
+            <a
+              class="flex-1 py-3 text-center text-sm font-bold text-slate-500 hover:text-white hover:bg-white/5 rounded-t-lg transition-colors relative group border-b-2 border-transparent"
+              href="#"
+            >
+              성형(Molding)
+            </a>
+            <div class="text-slate-700 select-none">›</div>
+            <a
+              class="flex-1 py-3 text-center text-sm font-bold text-slate-500 hover:text-white hover:bg-white/5 rounded-t-lg transition-colors relative group border-b-2 border-transparent"
+              href="#"
+            >
+              떡(Rice Cake)
+            </a>
+          </div>
+        </header>
+        <div class="flex-1 overflow-y-auto p-8 scroll-smooth">
+          <div class="mb-10 flex justify-between items-end">
+            <div>
+              <h3
+                class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400 mb-2 filter drop-shadow-lg"
+              >
+                Industrial Steaming Modules
+              </h3>
+              <p class="text-slate-400 max-w-2xl font-light text-lg">
+                High-precision steam injection and temperature control systems optimized for
+                high-capacity RNDPARK rice cake production lines.
+              </p>
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-2 text-slate-400 hover:text-white transition-all"
+              >
+                <span class="material-symbols-outlined">grid_view</span>
+              </button>
+              <button
+                class="bg-transparent hover:bg-white/5 border border-transparent hover:border-white/10 rounded-lg p-2 text-slate-600 hover:text-white transition-all"
+              >
+                <span class="material-symbols-outlined">list</span>
+              </button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            <div class="glass-card group relative overflow-hidden rounded-2xl flex flex-col h-full">
+              <div
+                class="holographic-shine absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10"
+              ></div>
+              <div class="p-6 flex flex-col h-full z-20 relative">
+                <div class="flex justify-between items-start mb-5">
+                  <div>
+                    <span
+                      class="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 border border-primary/20 px-2 py-1 rounded shadow-neon"
+                      >Model: RP-S2000</span
+                    >
+                    <h4
+                      class="text-xl font-bold mt-3 text-white group-hover:text-primary transition-colors"
+                    >
+                      Ultra-Steam Master V4
+                    </h4>
+                  </div>
+                  <div
+                    class="flex items-center gap-1.5 text-[10px] font-black text-emerald-400 bg-emerald-900/30 px-2 py-1 rounded-full border border-emerald-500/30"
+                  >
+                    <span
+                      class="size-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"
+                    ></span>
+                    READY
+                  </div>
+                </div>
+                <div
+                  class="aspect-video w-full rounded-xl bg-black/40 mb-6 overflow-hidden border border-white/10 relative group-hover:border-primary/30 transition-colors"
+                >
+                  <img
+                    alt="Industrial Steamer Machinery"
+                    class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                    data-alt="Close up of futuristic stainless steel industrial steam machinery"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsG7m-tTdPwZxz2Ffp4NImM7uBUPjHlcOWlwGM4XaYhZuM2HYvNF4gFHqbkN8GoTQ0nTTCLIr00Tgo8ExwtOCgH_oXIM_QmDEmGFZ1hACbbRKBvLQULpK1bsNGoKu_tOXt_YDbD8jK2l8nGe2yZm5y9AXYsMygqrU6FqqTSchtEFIbwo6uJ3wRQ2JkpKv5q3tdglZ1yejNXfkd0tCz-r3BpG34IBg2PY1qV5AN644L7nldQ0Xr6Lnh-37sUXBGJ83nv9xWjhKv4sg"
+                  />
+                  <div
+                    class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent flex justify-between items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  >
+                    <span
+                      class="bg-black/60 backdrop-blur-md text-[10px] px-2 py-1 rounded border border-white/20 text-white font-mono"
+                      >Vision: ON</span
+                    >
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3 mb-6">
+                  <div
+                    class="bg-white/5 p-3 rounded-lg border border-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Capacity</p>
+                    <p
+                      class="text-sm font-black text-primary drop-shadow-[0_0_5px_rgba(13,185,242,0.5)]"
+                    >
+                      2.4 Ton/h
+                    </p>
+                  </div>
+                  <div
+                    class="bg-white/5 p-3 rounded-lg border border-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Temp</p>
+                    <p class="text-sm font-black text-white">120-180°C</p>
+                  </div>
+                  <div
+                    class="bg-white/5 p-3 rounded-lg border border-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Pressure</p>
+                    <p
+                      class="text-sm font-black text-accent-purple drop-shadow-[0_0_5px_rgba(168,85,247,0.5)]"
+                    >
+                      1.5 MPa
+                    </p>
+                  </div>
+                </div>
+                <div class="mt-auto">
+                  <button
+                    class="w-full py-3 bg-white/5 hover:bg-primary/90 hover:text-black rounded-lg border border-white/10 hover:border-primary transition-all font-bold text-sm relative overflow-hidden group/btn shadow-lg"
+                  >
+                    <span class="relative z-10 flex items-center justify-center gap-2"
+                      >View Technical Specs
+                      <span
+                        class="material-symbols-outlined text-sm group-hover/btn:translate-x-1 transition-transform"
+                        >arrow_forward</span
+                      ></span
+                    >
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="glass-card group relative overflow-hidden rounded-2xl flex flex-col h-full">
+              <div
+                class="holographic-shine absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10"
+              ></div>
+              <div class="p-6 flex flex-col h-full z-20 relative">
+                <div class="flex justify-between items-start mb-5">
+                  <div>
+                    <span
+                      class="text-[10px] font-bold text-accent-purple uppercase tracking-widest bg-accent-purple/10 border border-accent-purple/20 px-2 py-1 rounded shadow-neon-purple"
+                      >Model: RP-X500</span
+                    >
+                    <h4
+                      class="text-xl font-bold mt-3 text-white group-hover:text-accent-purple transition-colors"
+                    >
+                      Precision Vapor Pulse
+                    </h4>
+                  </div>
+                  <div
+                    class="flex items-center gap-1.5 text-[10px] font-black text-primary bg-primary/20 px-2 py-1 rounded-full border border-primary/30"
+                  >
+                    <span class="size-1.5 rounded-full bg-primary animate-pulse shadow-neon"></span>
+                    ACTIVE
+                  </div>
+                </div>
+                <div
+                  class="aspect-video w-full rounded-xl bg-black/40 mb-6 overflow-hidden border border-white/10 relative group-hover:border-accent-purple/30 transition-colors"
+                >
+                  <img
+                    alt="Vapor Control Unit"
+                    class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                    data-alt="High tech blue tinted machinery components in factory"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8ujszDZAKTLpFVBsXnPGbMa8QV5XVMQI299hdMqMicqGTbiN4oJ2mVdIrqO8aiKW772cvIepsg5EL0rOQlNcyNg6_RWUlebZfVuAMRn32WFPzLIjxgJ88Iaj3-ntp8UPz_m248XSUoYkiBSc1jXHk8RBmGfxqTk3-nxbGwxVr85UXNW2HwYuzUot0C6HvLumnn7Ep3Lk9kbYvS51SnWIUcfwif2ZlcilLblnmNy5DrY5iNEPP56hcCHSOON4CYjc_P5jDC5zN370"
+                  />
+                </div>
+                <div class="grid grid-cols-3 gap-3 mb-6">
+                  <div
+                    class="bg-white/5 p-3 rounded-lg border border-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Capacity</p>
+                    <p
+                      class="text-sm font-black text-primary drop-shadow-[0_0_5px_rgba(13,185,242,0.5)]"
+                    >
+                      0.8 Ton/h
+                    </p>
+                  </div>
+                  <div
+                    class="bg-white/5 p-3 rounded-lg border border-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Temp</p>
+                    <p class="text-sm font-black text-white">100-140°C</p>
+                  </div>
+                  <div
+                    class="bg-white/5 p-3 rounded-lg border border-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Pressure</p>
+                    <p
+                      class="text-sm font-black text-accent-purple drop-shadow-[0_0_5px_rgba(168,85,247,0.5)]"
+                    >
+                      0.4 MPa
+                    </p>
+                  </div>
+                </div>
+                <div class="mt-auto">
+                  <button
+                    class="w-full py-3 bg-white/5 hover:bg-accent-purple hover:text-white rounded-lg border border-white/10 hover:border-accent-purple transition-all font-bold text-sm relative overflow-hidden group/btn shadow-lg"
+                  >
+                    <span class="relative z-10 flex items-center justify-center gap-2"
+                      >View Technical Specs
+                      <span
+                        class="material-symbols-outlined text-sm group-hover/btn:translate-x-1 transition-transform"
+                        >arrow_forward</span
+                      ></span
+                    >
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="glass-card group relative overflow-hidden rounded-2xl flex flex-col h-full">
+              <div
+                class="holographic-shine absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10"
+              ></div>
+              <div class="p-6 flex flex-col h-full z-20 relative">
+                <div class="flex justify-between items-start mb-5">
+                  <div>
+                    <span
+                      class="text-[10px] font-bold text-slate-300 uppercase tracking-widest bg-white/5 border border-white/10 px-2 py-1 rounded"
+                      >Model: RP-D1200</span
+                    >
+                    <h4
+                      class="text-xl font-bold mt-3 text-white group-hover:text-primary transition-colors"
+                    >
+                      Dual Chamber Pro
+                    </h4>
+                  </div>
+                  <div
+                    class="flex items-center gap-1.5 text-[10px] font-black text-slate-400 bg-slate-800/50 px-2 py-1 rounded-full border border-slate-600/30"
+                  >
+                    <span class="size-1.5 rounded-full bg-slate-500"></span>
+                    STANDBY
+                  </div>
+                </div>
+                <div
+                  class="aspect-video w-full rounded-xl bg-black/40 mb-6 overflow-hidden border border-white/10 relative group-hover:border-primary/30 transition-colors"
+                >
+                  <img
+                    alt="Dual Chamber Machinery"
+                    class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                    data-alt="Industrial factory setting with blue lighting and heavy metal structures"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDx8OBIWdnwcsXNQT3JWLcxeBV_3og5kXjwTHE5dWI9S1Ro4jco-W7sKJ6whmqFnDysCbwUR_UwaI9WHHboiCOYx4UE6upW2a_c1eKNQMp7IRAnI8H9-c0kR4YsqvcwFt6NNIHGgrjzeddcVMBCginlqo9Qq3IzsoDP063upC6L3zZfk7JbADq_lLHCpYItsY-wPexbWinz9N3y_8A4x7QBSaxdnvWiPY_ctbCTBmC_amOq1X2P1oqLxlMfhhDbLg8OXmjuhX2BBvE"
+                  />
+                </div>
+                <div class="grid grid-cols-3 gap-3 mb-6">
+                  <div
+                    class="bg-white/5 p-3 rounded-lg border border-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Capacity</p>
+                    <p
+                      class="text-sm font-black text-primary drop-shadow-[0_0_5px_rgba(13,185,242,0.5)]"
+                    >
+                      1.2 Ton/h
+                    </p>
+                  </div>
+                  <div
+                    class="bg-white/5 p-3 rounded-lg border border-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Temp</p>
+                    <p class="text-sm font-black text-white">150-200°C</p>
+                  </div>
+                  <div
+                    class="bg-white/5 p-3 rounded-lg border border-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Pressure</p>
+                    <p
+                      class="text-sm font-black text-accent-purple drop-shadow-[0_0_5px_rgba(168,85,247,0.5)]"
+                    >
+                      2.0 MPa
+                    </p>
+                  </div>
+                </div>
+                <div class="mt-auto">
+                  <button
+                    class="w-full py-3 bg-white/5 hover:bg-primary/90 hover:text-black rounded-lg border border-white/10 hover:border-primary transition-all font-bold text-sm relative overflow-hidden group/btn shadow-lg"
+                  >
+                    <span class="relative z-10 flex items-center justify-center gap-2"
+                      >View Technical Specs
+                      <span
+                        class="material-symbols-outlined text-sm group-hover/btn:translate-x-1 transition-transform"
+                        >arrow_forward</span
+                      ></span
+                    >
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <footer
+          class="p-6 border-t border-white/5 bg-black/40 backdrop-blur-md flex justify-between items-center text-xs text-slate-500 font-medium z-40"
+        >
+          <div class="flex gap-6">
+            <span class="flex items-center gap-2"
+              ><span class="material-symbols-outlined text-[16px] text-slate-600">update</span>
+              <span class="font-mono text-slate-400">2024.05.24 14:32:01</span></span
+            >
+            <span class="flex items-center gap-2"
+              ><span class="material-symbols-outlined text-[16px] text-primary">language</span>
+              <span class="text-slate-400">Control Node: Seoul Central HUB</span></span
+            >
+          </div>
+          <div class="text-slate-600">
+            © 2024 <span class="text-slate-400 font-bold">RNDPARK</span> Industrial Robotics. All
+            rights reserved.
+          </div>
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

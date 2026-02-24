@@ -49,7 +49,14 @@
       "completedAt": "2026-02-19",
       "stack": "NestJS + MySQL + Redis + WebSocket + Docker",
       "note": "Wave 병렬 방식 재구현 — 최대 4개 동시 에이전트. 유닛 19+E2E 13 all pass."
+    },
+    {
+      "name": "rndpark-homepage",
+      "status": "active",
+      "path": "workspace/rndpark-homepage",
+      "startedAt": "2026-02-22",
+      "stack": "Next.js 15 + Tailwind v4 + Firebase"
     }
   ],
-  "lastUpdated": "2026-02-19"
+  "lastUpdated": "2026-02-22"
 }

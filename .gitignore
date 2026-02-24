@@ -13,3 +13,6 @@ coverage/
 workspace/
 .claude/
 logs/tokens/
+
+# MCP config (contains API keys)
+.mcp.json
