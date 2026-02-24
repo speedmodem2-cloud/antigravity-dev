@@ -1,11 +1,12 @@
 {
   "name": "@dev/gemini-bridge",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
-  "description": "Gemini API + NotebookLM 연동 모듈",
+  "description": "Gemini API + MCP Server — chat, vision, ping-pong, UI review",
   "main": "src/index.ts",
   "scripts": {
-    "start": "node --import tsx src/index.ts"
+    "start": "node --import tsx src/index.ts",
+    "mcp": "node --import tsx src/mcp-server.ts"
   },
   "devDependencies": {
     "tsx": "^4.19.0",
@@ -18,6 +19,7 @@
     ]
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
     "puppeteer": "^24.37.5"
   }
 }

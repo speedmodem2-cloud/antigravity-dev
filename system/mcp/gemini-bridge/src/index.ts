@@ -46,7 +46,10 @@ export async function callGemini(
   prompt: string,
   config: Partial<GeminiConfig> = {},
 ): Promise<GeminiResponse> {
-  const cfg = { ...DEFAULT_CONFIG, ...config };
+  const cfg = {
+    ...DEFAULT_CONFIG,
+    ...Object.fromEntries(Object.entries(config).filter(([, v]) => v !== undefined)),
+  };
 
   if (!cfg.apiKey) {
     throw new Error('GEMINI_API_KEY 환경변수가 설정되지 않았습니다');
@@ -126,6 +129,94 @@ export function prepareForNotebookLM(
   }
 
   return results;
+}
+
+/**
+ * Gemini API 멀티턴 호출 (대화 기록 전체를 전달)
+ */
+export async function callGeminiMultiTurn(
+  messages: GeminiMessage[],
+  config: Partial<GeminiConfig> = {},
+): Promise<GeminiResponse> {
+  const cfg = {
+    ...DEFAULT_CONFIG,
+    ...Object.fromEntries(Object.entries(config).filter(([, v]) => v !== undefined)),
+  };
+  if (!cfg.apiKey) throw new Error('GEMINI_API_KEY 환경변수가 설정되지 않았습니다');
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.apiKey}`;
+  const body = {
+    contents: messages.map((m) => ({ role: m.role, parts: m.parts })),
+    generationConfig: { maxOutputTokens: cfg.maxTokens, temperature: cfg.temperature },
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Gemini API 오류 (${response.status}): ${error}`);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const usage = data.usageMetadata ?? {};
+  return {
+    text,
+    inputTokens: usage.promptTokenCount ?? 0,
+    outputTokens: usage.candidatesTokenCount ?? 0,
+    model: cfg.model,
+  };
+}
+
+/**
+ * Gemini Vision API 호출 (이미지 + 텍스트)
+ */
+export async function callGeminiWithImage(
+  prompt: string,
+  imageBase64: string,
+  mimeType: string,
+  config: Partial<GeminiConfig> = {},
+): Promise<GeminiResponse> {
+  const cfg = {
+    ...DEFAULT_CONFIG,
+    ...Object.fromEntries(Object.entries(config).filter(([, v]) => v !== undefined)),
+  };
+  if (!cfg.apiKey) throw new Error('GEMINI_API_KEY 환경변수가 설정되지 않았습니다');
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.apiKey}`;
+  const body = {
+    contents: [
+      {
+        parts: [{ inlineData: { mimeType, data: imageBase64 } }, { text: prompt }],
+      },
+    ],
+    generationConfig: { maxOutputTokens: cfg.maxTokens, temperature: cfg.temperature },
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Gemini API 오류 (${response.status}): ${error}`);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const usage = data.usageMetadata ?? {};
+  return {
+    text,
+    inputTokens: usage.promptTokenCount ?? 0,
+    outputTokens: usage.candidatesTokenCount ?? 0,
+    model: cfg.model,
+  };
 }
 
 /**
