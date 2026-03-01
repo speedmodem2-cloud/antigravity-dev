@@ -16,3 +16,6 @@ logs/tokens/
 
 # MCP config (contains API keys)
 .mcp.json
+
+# Activity logs (local PC only)
+activity-logs/
