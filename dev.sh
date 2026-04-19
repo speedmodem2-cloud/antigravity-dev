@@ -10,6 +10,7 @@ show_list() {
   echo "  portfolio        → http://localhost:3000  (Vite React)"
   echo "  portfolio2       → http://localhost:3001  (Vite React)"
   echo "  portfolio3       → http://localhost:3002  (Vite React)"
+  echo "  rndpark-homepage → http://localhost:3000  (Next.js 15 + Tailwind v4)"
   echo "  shop-backend1    → http://localhost:3000  (NestJS + Docker 필요)"
   echo "  shop-backend2    → http://localhost:3000  (NestJS + Docker 필요)"
   echo "  shop-backend2-1  → http://localhost:3000  (NestJS + Docker 필요)"
@@ -27,6 +28,9 @@ case $PROJECT in
     ;;
   portfolio3)
     cd d:/Dev/workspace/portfolio3 && pnpm dev
+    ;;
+  rndpark-homepage)
+    cd d:/Dev/workspace/rndpark-homepage && pnpm dev
     ;;
   shop-backend1)
     echo "[1/2] Docker 컨테이너 시작..."
