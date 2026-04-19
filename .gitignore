@@ -19,3 +19,29 @@ logs/tokens/
 
 # Activity logs (local PC only)
 activity-logs/
+
+# Speech logs — raw transcript/audio + JSON metrics contain personal content.
+# Repo에는 code/config/docs만 유지하고 실제 로그·오디오는 로컬에만 보관.
+speech-logs/logs/
+speech-logs/audio/
+speech-logs/reports/
+speech-logs/.venv/
+speech-logs/.cache/
+
+# Personal hub — 통합 프로필/목표/주간 업데이트. 전부 개인 정보.
+personal-hub/
+
+# Daily briefing (local only)
+daily-briefing/
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Personal planning docs at repo root
+/호진_*.md
+/drawing-checker-*.md
+/speech-logs_*.md
+
+# Accidental artifacts
+/null
