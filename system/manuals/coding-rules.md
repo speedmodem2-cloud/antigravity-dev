@@ -26,6 +26,14 @@
 4. Main logic
 5. Exports
 
+## Commit Rules (Conventional Commits)
+
+- Format: `<type>(<scope>): <subject>`
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+- Scope: module or component name
+- Subject: imperative, present tense, no period at end
+- Max 5 files per commit, 1 commit per module
+
 ## Error Handling
 
 - Specific error types in try-catch

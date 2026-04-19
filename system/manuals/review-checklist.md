@@ -38,6 +38,11 @@
 
 ## CSS Visual Layers (no-image projects)
 
-- [ ] ≥2 layers per section
-- [ ] aria-hidden="true" on decorative
-- [ ] prefers-reduced-motion support
+- [ ] ≥2 layers per section (e.g., ghost text + dot pattern)
+- [ ] Techniques used:
+  - `ghost text`: `opacity: 0.05`, `font-size: 8rem`, `font-weight: 900`, `z-index: 0`
+  - `dot pattern`: `radial-gradient(circle, #000 1px, transparent 1px) 20px 20px`
+  - `grid borders`: `border: 1px solid #1a1a1a`, `z-index: 10`
+  - `glow`: `radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)`
+- [ ] aria-hidden="true" on all decorative layers
+- [ ] prefers-reduced-motion: `transition: none` or `animation: none` support
