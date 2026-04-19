@@ -12,8 +12,7 @@
 
 ## Pre-flight
 
-- **TUI 항상 실행 (MANDATORY)**: 세션 시작 시 즉시 `cd c:/Dev/tools/tui-dashboard && pnpm dev` 백그라운드 실행. 이미 실행 중이면 skip. 프로젝트 작업 전체 기간 동안 유지.
-- **프로젝트 등록 (MANDATORY)**: 새 프로젝트 시작 시 `system/projects.json`에 `status: "active"` 항목 추가. TUI가 자동 감지 (시작 10초간 500ms 폴링).
+- **프로젝트 등록**: 새 프로젝트 시작 시 `system/projects.json`에 `status: "active"` 항목 추가.
 - Check env vars, deps, dirs, MCP before coding.
 - Proactive: verify before user asks.
 
@@ -33,7 +32,7 @@
 
 - `phase-manager`: `tsx tools/phase-manager/src/index.ts <cmd>` (init/advance/complete/skip/status/reset)
 - `retrospect`: `tsx tools/retrospect/src/index.ts analyze <project>`
-- `tui-dashboard` v2.3: auto-launch on project start (`cd c:/Dev/tools/tui-dashboard && pnpm dev`)
+- `tui-dashboard` v3.0: **봉인됨 (2026-04-17)**. TTY 미지원으로 Claude Code 세션에서 자동 실행 불가 → 유지 비용 > 효용. 코드는 `tools/tui-dashboard/`에 보존. 대규모 Wave 오케스트레이션 재개 시 수동 부활 검토.
 - `gemini-bridge` MCP v2.0: 4 tools → `gemini_chat`, `gemini_chat_image`, `gemini_pingpong`, `gemini_ui_review`
 
 ## Gemini 활용 지침 (MANDATORY)
@@ -56,7 +55,6 @@
 
 - **Phase 0**: `Task(model:"opus")` → 아키텍처 설계 + Wave 계획 + 인터페이스 계약 반환
 - **Wave dispatch**: 의존성 그래프 기준 Wave 구성. 파일 충돌 없는 태스크 동시 실행. 최대 4개/Wave.
-- **Wave 타이밍**: Wave 시작 시 `waveTimings.N.startedAt = now`, 완료 시 `waveTimings.N.completedAt = now` → active-agents.json에 기록
 - `app.module.ts` 등 통합 파일은 Wave 완료 후 오케스트레이터 직접 처리.
 - **에이전트 범위 명시 필수**: 프롬프트에 "이 모듈만, app.module.ts 수정 금지" 명시
 - **커밋**: 5파일 이하, 모듈당 1커밋
@@ -65,14 +63,10 @@
 ## Common Rules
 
 - **병렬 최우선 (MANDATORY)**: 독립적인 작업은 반드시 병렬 실행. Wave 내 태스크, 서브에이전트 디스패치, Tool 호출 모두 의존성 없으면 동시 실행.
-- **TUI 가시성 (MANDATORY)**: 모든 AI 작업은 TUI에서 확인 가능해야 함.
-  - 3단계 이상 작업 → `TodoWrite` 필수 (세션 패널에 실시간 반영)
-  - 서브에이전트 실행 → `active-agents.json`에 roster/agents 기록
-  - 단순 작업도 in_progress → completed 상태 전환 명시
+- **진행 추적**: 3단계 이상 작업 → TaskCreate/TaskUpdate 필수. 단순 작업도 in_progress → completed 상태 전환 명시.
 - Phase skip = always confirm | Post-project = retrospective + changelog
 - pnpm hardlinks (actual disk < reported) | Dev env = maintenance (not pipeline)
 - Doc split: AI→English compressed (`manuals/`), User→Korean readable (`docs/`)
-- TUI auto-launch on project start (see Pre-flight)
 
 ## Project Lessons → 상세: [project-lessons.md](project-lessons.md)
 
@@ -88,6 +82,16 @@
 
 - 서브에이전트 디스패치 시 템플릿 활용 → 프롬프트 토큰 절감
 - sonnet-implement.md | sonnet-test.md | haiku-task.md
+
+## Active Projects
+
+- [speech-logs](project_speech_logs.md) — 말하기 훈련 파이프라인. Phase 1 MVP 구현 완료, 실전 5분 녹음 1회 대기 중.
+- [personal-hub](project_personal_hub.md) — 호진씨 개인 AI 비서 시스템 (`C:\Dev\personal-hub\`). 모든 로그 통합 관리 + 프로필 상시 갱신 + 방향성 조언. 트리거: "상황 업데이트" / "방향성 조언" / "주간 회고".
+
+## Feedback
+
+- [Gemini chat 활용 피드백](feedback_gemini_chat_usage.md) — 디버깅 막힐 때 상세 컨텍스트로 2nd opinion 받는 패턴 긍정 평가
+- [판단 위임 선호](feedback_decision_delegation.md) — Claude가 판단·실행 주도. 세부 선택 물음표 남발 금지. 큰 가치 결정만 사용자에게.
 
 ## Plan File Convention
 
