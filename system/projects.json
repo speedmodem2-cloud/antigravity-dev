@@ -1,6 +1,6 @@
 {
-  "version": "1.0",
-  "lastUpdated": "2026-02-18",
+  "version": "1.1",
+  "lastUpdated": "2026-03-12",
   "projects": [
     {
       "name": "portfolio1",
@@ -56,7 +56,15 @@
       "path": "workspace/rndpark-homepage",
       "startedAt": "2026-02-22",
       "stack": "Next.js 15 + Tailwind v4 + Firebase"
+    },
+    {
+      "name": "speech-logs",
+      "status": "active",
+      "path": "speech-logs",
+      "startedAt": "2026-04-13",
+      "stack": "Python 3.11 + faster-whisper + silero-vad",
+      "note": "Phase 1 MVP 구현 중 (옵션 E: STT + VAD 하이브리드)"
     }
   ],
-  "lastUpdated": "2026-02-22"
+  "lastUpdated": "2026-04-17"
 }
